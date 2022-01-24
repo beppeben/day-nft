@@ -291,14 +291,15 @@ pub contract DayNFT: NonFungibleToken {
         
         if(self.bestBid.date.equals(today) || self.bestBid.vault.balance == 0.0) {
             if(bid.vault.balance > self.bestBid.vault.balance) {
-                // refund current best bid and replace it with the new one
-                let rec = getAccount(self.bestBid.recipient).getCapability(/public/flowTokenReceiver)
-                            .borrow<&FlowToken.Vault{FungibleToken.Receiver}>()
-                            ?? panic("Could not borrow a reference to the receiver")
-                var tempVault <- FlowToken.createEmptyVault() as! @FlowToken.Vault
-                tempVault <-> self.bestBid.vault
-                rec.deposit(from: <- tempVault)
-
+                if(self.bestBid.vault.balance > 0.0) {
+                    // refund current best bid and replace it with the new one
+                    let rec = getAccount(self.bestBid.recipient).getCapability(/public/flowTokenReceiver)
+                                .borrow<&FlowToken.Vault{FungibleToken.Receiver}>()
+                                ?? panic("Could not borrow a reference to the receiver")
+                    var tempVault <- FlowToken.createEmptyVault() as! @FlowToken.Vault
+                    tempVault <-> self.bestBid.vault
+                    rec.deposit(from: <- tempVault)
+                }
                 bid <-> self.bestBid
                 destroy bid
             } else {
@@ -349,18 +350,36 @@ pub contract DayNFT: NonFungibleToken {
         emit BidReceived(user: recipient, date: date, title: title)
     }
 
+    pub struct PublicBid {
+        pub let amount: UFix64
+        pub let user: Address
+        pub let date: Date
+
+        init(amount: UFix64, 
+              user: Address,
+              date: Date) {
+            self.amount = amount
+            self.user = user
+            self.date = date
+        }
+    }
+
     // Get the best bid for today's auction
-    pub fun getBestBid(): UFix64 {
-      var today = self.getDate()
-      return self.getBestBidWithToday(today: today)
+    pub fun getBestBid(): PublicBid {
+        var today = self.getDate()
+        return self.getBestBidWithToday(today: today)
     }
     // ONLY FOR TESTING, THIS MUST BE PRIVATE WHEN DEPLOYED
-    pub fun getBestBidWithToday(today: Date): UFix64 {
-      if (today.equals(self.bestBid.date)) {
-          return self.bestBid.vault.balance
-      } else {
-        return 0.0
-      }
+    pub fun getBestBidWithToday(today: Date): PublicBid {
+        if (today.equals(self.bestBid.date)) {
+            return PublicBid(amount: self.bestBid.vault.balance,
+                                user: self.bestBid.recipient,
+                                date: today)
+        } else {
+            return PublicBid(amount: 0.0,
+                                user: Address(0x0),
+                                date: today)
+        }
     }
 
     // Verify if a user has any NFTs to claim after winning one or more auctions
@@ -381,7 +400,7 @@ pub contract DayNFT: NonFungibleToken {
     }
 
     // Claim NFTs due to the user, and deposit them into their collection
-    pub fun claimNFTs(address: Address, today: Date): Int {
+    pub fun claimNFTs(address: Address): Int {
         var today = self.getDate()
         return self.claimNFTsWithToday(address: address, today: today)
     }
@@ -507,7 +526,7 @@ pub contract DayNFT: NonFungibleToken {
         let vault <- FlowToken.createEmptyVault() as! @FlowToken.Vault        
         let date = Date(day: 1, month: 1, year: 2020) 
         self.bestBid <- create Bid(vault: <- vault, 
-                      recipient: self.account.address,
+                      recipient: Address(0x0),
                       title: "",
                       date: date)
 

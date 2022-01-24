@@ -54,6 +54,7 @@ export function Transaction(props) {
           <a href={`https://testnet.flowscan.org/transaction/${props.txId}`}>{props.txId?.slice(0, 8)}</a>
         </span>
         <span><kbd>✓ Sealed</kbd><br /><small>The verification nodes have verified the transaction, and the seal is included in the latest block.</small></span>
+        <span className="txError"><br /><small>{props.transactionError}</small></span>
         <progress min="0" max="100" value="100">Sealed!</progress>
       </div>
     )
@@ -104,7 +105,7 @@ export function Transaction(props) {
   return (
     <div className="card tx">
       {response}
-      <small><a href="https://docs.onflow.org/access-api/">More info</a></small>
+      <small><a onClick={props.hideTx}>Clear</a></small>
     </div>
   )
 }

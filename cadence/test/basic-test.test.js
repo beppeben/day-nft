@@ -64,7 +64,8 @@ describe("basic-test", ()=>{
     
     // verify best bid is recorded
     var [result,error] = await executeScript("read_best_bid_test", [today]);
-    expect(result).toEqual("10.00000000");
+    expect(result.amount).toEqual("10.00000000");
+    expect(result.user).toEqual(alice);
 
     // bid on today's nft by bob (for a higher amount)
     var args = [15.0, "hello world2", today, today];

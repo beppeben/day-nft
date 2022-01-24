@@ -10,7 +10,7 @@ window.onload = function() {
 
   const inputHandler = function(e) {
     myp5.remove();  
-    myp5 = new p5(sketchWithParams("30-12-2021", e.target.value, n_pixels), 'p5sketch');
+    myp5 = new p5(sketchWithParams(date, e.target.value, n_pixels), 'p5sketch');
   }
 
   const msg = document.getElementById('msg');
