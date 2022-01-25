@@ -15,6 +15,7 @@ function App() {
   const [transactionStatus, setTransactionStatus] = useState(null)
   const [transactionError, setTransactionError] = useState(null)
   const [txId, setTxId] = useState(null)
+  const [timeToAuctionEnd, setTimeToAuctionEnd] = useState("")
   
   async function onAuthenticate(user) {
     setUser(user)
@@ -83,14 +84,15 @@ function App() {
       cadence: `
         import DayNFT from 0xDayNFT
 
-        pub fun main(): UFix64 {
+        pub fun main(): DayNFT.PublicBid {
             return DayNFT.getBestBid()
         }
       `,
       args: []
     })
 
-    setBestBid(Math.round(bestBid * 1000) / 1000)
+    //setBestBid(Math.round(bestBid.amount * 1000) / 1000)
+    setBestBid(bestBid)
   }
   
   async function updateTx(res) {
@@ -200,16 +202,16 @@ function App() {
     return (
       <div>       
         <button onClick={logOut}>LOGOUT</button>
-        <div>Logged in as: {user?.addr ?? "No Address"}</div>
-        <div>Flow balance: {flowBalance ?? "ND"}</div>
-        <div style={{display: 'flex', alignItems:'center'}}>
+        <div class="infoList">Logged in as: {user?.addr ?? "No Address"}</div>
+        <div class="infoList">Flow balance: {flowBalance ?? "ND"}</div>
+        <div class="infoList" style={{display: 'flex', alignItems:'center'}}>
           Flow to claim: {flowToClaim ?? 0}
           {flowToClaim > 0?
             <button style={{marginLeft: '10px'}} onClick={logOut}>CLAIM FLOW</button>
             :<span></span>
           }
         </div>
-        <div style={{display: 'flex', alignItems:'center'}}>
+        <div class="infoList" style={{display: 'flex', alignItems:'center'}}>
           NFTs to claim: {NFTsToClaim}
           {NFTsToClaim > 0?
             <button style={{marginLeft: '10px'}} onClick={claimNFTs}>CLAIM NFTs</button>
@@ -228,6 +230,22 @@ function App() {
     )
   }
 
+  function calcTimeToAuctionEnd() {
+    let today = new Date();
+    var res = ""
+    let hours = 23 - today.getUTCHours()
+    let minutes = 59 - today.getUTCMinutes()
+    let seconds = 59 - today.getUTCSeconds()
+
+    res = hours.toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false}) + ":"
+          + minutes.toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false}) + ":"
+          + seconds.toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})
+    setTimeToAuctionEnd(res)
+  }
+
+  setInterval(calcTimeToAuctionEnd, 1000);
+  
+
   const WelcomeText = (props) => {
     return (
     <div className="center-text">
@@ -240,7 +258,11 @@ function App() {
         :<span></span>
       }
       {props.loggedIn
-        ? <p>Current best bid: {bestBid ?? "ND"} Flow</p>
+        ? <div>
+            <p>Current best bid: {Math.round(bestBid?.amount * 1000) / 1000} Flow</p>
+            {bestBid?.user == user?.addr ? <p class="bestBid">You hold the current best bid!</p>:<span></span>}
+            <p>Auction over in {timeToAuctionEnd}</p>
+          </div>
         : <p>"Connect your wallet and make your bid!"</p>
       }
 

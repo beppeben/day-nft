@@ -108,7 +108,7 @@ describe("basic-test", ()=>{
 
     // verify contract balance
     [balance, error] = await getFlowBalance(myself);
-    expect(balance).toEqual("1000000014.99500000");
+    expect(balance).toEqual("1000000007.49500000");
     
     // read total supply
     var [result,error] = await executeScript("read_total_supply", []);
@@ -150,9 +150,9 @@ describe("basic-test", ()=>{
     var [result,error] = await executeScript("read_nb_nfts_to_claim_test", [alice, day2]);
     expect(result).toEqual(1);
 
-    // bob should get a cut of the price paid by alice (5.0 * 50% / 2)
+    // bob should get a cut of the price paid by alice (5.0 * 50% / 1)
     var [result,error] = await executeScript("read_tokens_to_claim", [bob]);
-    expect(result).toEqual("1.25000000");
+    expect(result).toEqual("2.50000000");
     
     // claim tokens
     var [result, error] = await sendTransaction("claim_tokens", [bob], []);
@@ -160,7 +160,7 @@ describe("basic-test", ()=>{
 
     // verify bob's balance has increased
     [balance, error] = await getFlowBalance(bob);
-    expect(balance).toEqual("36.25100000");
+    expect(balance).toEqual("37.50100000");
 
     // there should be nothing more to claim
     var [result,error] = await executeScript("read_tokens_to_claim", [bob]);
@@ -180,13 +180,13 @@ describe("basic-test", ()=>{
     var [result,error] = await executeScript("read_collection_ids", [alice]);
     expect(result).toEqual([1, 2]);
 
-    // alice should get a cut of her latest NFT because she already held one (2 * 50% / 3)
+    // alice should get a cut of her latest NFT because she already held one (2 * 50% / 2)
     var [result,error] = await executeScript("read_tokens_to_claim", [alice]);
-    expect(result).toEqual("0.33333333");
+    expect(result).toEqual("0.50000000");
 
     // same for bob
     var [result,error] = await executeScript("read_tokens_to_claim", [bob]);
-    expect(result).toEqual("0.33333333");
+    expect(result).toEqual("0.50000000");
     
   })
 })

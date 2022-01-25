@@ -56,8 +56,9 @@ var sketchWithParams = function(date, message, n_pixels) {
       p.textAlign(p.CENTER, p.CENTER);
 
       p.fill(0)
-      p.text(date, 0.2 * n_pixels, 0.05 * n_pixels)
-      p.text("DAY-NFT.IO", 0.8125 * n_pixels, 0.05 * n_pixels)
+      p.text(date, 0.25 * n_pixels, 0.07 * n_pixels)
+      p.text("DAY-NFT.IO", 0.7625 * n_pixels, 0.07 * n_pixels)
+      //p.text(date, 0.5 * n_pixels, 0.07 * n_pixels)
       
       message = message.replaceAll("\\n", "\n")
       p.text(message, 0.5 * n_pixels, 0.9 * n_pixels)

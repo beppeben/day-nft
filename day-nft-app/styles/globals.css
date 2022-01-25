@@ -123,7 +123,15 @@ input{
 }
 
 p {
-  margin-bottom:1em;
+  margin-bottom:0.5em;
+}
+
+.infoList {
+  margin-bottom:0.5em;
+}
+
+.bestBid{
+  color:#90EE90;
 }
 
 .txError{

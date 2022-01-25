@@ -24,6 +24,9 @@ pub contract DayNFT: NonFungibleToken {
     // redistributed to NFT holders
     pub let percentageDistributed: UFix64
 
+    // Vault to be used for flow redistribution
+    access(contract) let distributeVault: @FlowToken.Vault
+
     // Best bid of the day for minting today's NFT
     access(contract) var bestBid: @Bid
 
@@ -482,12 +485,20 @@ pub contract DayNFT: NonFungibleToken {
         }
 
         // pay amount
-        let mainVault = self.account.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault)
-                    ?? panic("Could not borrow a reference to the flow vault")
-        let vault <- mainVault.withdraw(amount: amountDue)
+        //let mainVault = self.account.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault)
+        //            ?? panic("Could not borrow a reference to the flow vault")
+        let vault <- self.distributeVault.withdraw(amount: amountDue)
         receiver.deposit(from: <- vault)
 
         return amountDue
+    }
+
+    pub fun max(_ a: UFix64, _ b: UFix64): UFix64 {
+        var res = a
+        if (b > a){
+            res = b
+        }
+        return res
     }
     
     // Deposit Flow into the contract, to be redistributed among NFT holders
@@ -497,14 +508,17 @@ pub contract DayNFT: NonFungibleToken {
                     .borrow<&FlowToken.Vault{FungibleToken.Receiver}>()
                     ?? panic("Could not borrow a reference to the receiver")
         let amount = vault.balance
+        let distribute = amount * self.percentageDistributed
+        let distrVault <- vault.withdraw(amount: distribute)
+        self.distributeVault.deposit(from: <- distrVault)
         rec.deposit(from: <- vault)
 
         // assign part of the value to the current holders
         let id = self.totalSupply
-        let distribute = amount * self.percentageDistributed / (UFix64(id) + 1.0)
+        let distributeEach = distribute / self.max(UFix64(id), 1.0)
         var a = 0 as UInt64
         while a < id {
-            self.amountsDue[a] = self.amountsDue[a]! + distribute
+            self.amountsDue[a] = self.amountsDue[a]! + distributeEach
             a = a + 1
         }
     }
@@ -513,14 +527,15 @@ pub contract DayNFT: NonFungibleToken {
 
         // Set named paths
         //FIXME: REMOVE SUFFIX BEFORE RELEASE
-        self.CollectionStoragePath = /storage/DayNFTCollection001
-        self.CollectionPublicPath = /public/DayNFTCollection001
+        self.CollectionStoragePath = /storage/DayNFTCollection002
+        self.CollectionPublicPath = /public/DayNFTCollection002
 
         self.totalSupply = 0
         self.amountsDue = {}
         self.NFTsDue <- {}
 
         self.percentageDistributed = 0.5
+        self.distributeVault <- FlowToken.createEmptyVault() as! @FlowToken.Vault  
         
         // initialize dummy best bid
         let vault <- FlowToken.createEmptyVault() as! @FlowToken.Vault        
