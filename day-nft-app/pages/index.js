@@ -9,6 +9,7 @@ export default function Home() {
         <title>DAY-NFT</title>
         <meta name="description" content="DAY-NFT minting app" />
         <link rel="icon" href="/favicon.png" />
+        <link href="http://fonts.cdnfonts.com/css/silkscreen" rel="stylesheet" />
       </Head>
       
 

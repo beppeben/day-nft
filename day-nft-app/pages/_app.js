@@ -7,15 +7,12 @@ function MyApp({ Component, pageProps }) {
     <nav className="container header">
       <ul>
         <li>
-          DAY-NFT
+          <Link href="/">
+            <a><h2>DAY-NFT.IO</h2></a>
+          </Link>
         </li>
       </ul>
       <ul>
-        <li>
-          <Link href="/">
-            <a>Home</a>
-          </Link>
-        </li>
         <li>
           <Link href="/about">
             <a>About</a>

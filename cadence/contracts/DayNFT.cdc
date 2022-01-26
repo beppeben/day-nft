@@ -284,7 +284,7 @@ pub contract DayNFT: NonFungibleToken {
           panic("You can only bid a positive amount")
         }
         if (title.length > 70) {
-          panic("The title can only be 70 characters long")
+          panic("The title can only be 70 characters long at most")
         }
         
         var bid <- create Bid(vault: <-vault, 

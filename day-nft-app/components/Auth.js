@@ -151,11 +151,6 @@ function App() {
   }
 
   const claimNFTs = async () => {
-    let today = new Date();
-    let day = today.getUTCDate().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})
-    let month = (today.getUTCMonth()+1).toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})
-    let year = today.getUTCFullYear()
-    
     initTransactionState()
     const transactionId = await fcl.mutate({
       cadence: `
@@ -198,16 +193,44 @@ function App() {
     fcl.tx(transactionId).subscribe(updateTx)
   }
 
+  const claimFlow = async () => {
+    initTransactionState()
+    const transactionId = await fcl.mutate({
+      cadence: `
+        import DayNFT from 0xDayNFT
+
+        transaction() {
+
+            let address: Address
+
+            prepare(signer: AuthAccount) {
+                self.address = signer.address     
+            }
+
+            execute { 
+                DayNFT.claimTokens(address: self.address)
+            }
+        }
+      `,
+      args: (arg, t) => [],
+      payer: fcl.authz,
+      proposer: fcl.authz,
+      authorizations: [fcl.authz],
+      limit: 1000
+    })
+    setTxId(transactionId);
+    fcl.tx(transactionId).subscribe(updateTx)
+  }
+
   const AuthedState = () => {
     return (
       <div>       
         <button onClick={logOut}>LOGOUT</button>
-        <div class="infoList">Logged in as: {user?.addr ?? "No Address"}</div>
         <div class="infoList">Flow balance: {flowBalance ?? "ND"}</div>
         <div class="infoList" style={{display: 'flex', alignItems:'center'}}>
-          Flow to claim: {flowToClaim ?? 0}
+          Flow to claim: {Math.round(flowToClaim * 1000) / 1000}
           {flowToClaim > 0?
-            <button style={{marginLeft: '10px'}} onClick={logOut}>CLAIM FLOW</button>
+            <button style={{marginLeft: '10px'}} onClick={claimFlow}>CLAIM FLOW</button>
             :<span></span>
           }
         </div>
@@ -225,7 +248,7 @@ function App() {
   const UnauthenticatedState = () => {
     return (
       <div>
-        <button onClick={fcl.authenticate}>WALLET</button>
+        <button onClick={fcl.authenticate}>CONNECT</button>
       </div>
     )
   }
@@ -251,9 +274,8 @@ function App() {
     <div className="center-text">
       {!props.loggedIn?
         <ul>
-          <li>You can post bids for the daily NFT by customizing it with your own message and automatically generated image.</li>
-          <li>Only one NFT is minted every day on the Flow blockchain to the highest bidder.</li>
-          <li>50% of all Flow obtained from the mints and transfer costs is redistributed back to the NFT holders in equal proportions.</li>
+          <li>Only one customized Day-NFT is minted every day to the highest bidder.</li>
+          <li>50% of all earnings from mints and marketplace fees are redistributed back to NFT holders.</li>
         </ul>
         :<span></span>
       }
@@ -263,7 +285,7 @@ function App() {
             {bestBid?.user == user?.addr ? <p class="bestBid">You hold the current best bid!</p>:<span></span>}
             <p>Auction over in {timeToAuctionEnd}</p>
           </div>
-        : <p>"Connect your wallet and make your bid!"</p>
+        : <span></span>
       }
 
     </div>
@@ -285,7 +307,7 @@ function App() {
         <WelcomeText loggedIn={user?.loggedIn} />
         <div style={{display: user?.loggedIn ? 'block' : 'none' }}>
           <div>
-            <input style={{marginBottom:'10px'}} type="text" id="msg" name="msg" placeholder="Message" onChange={(e) => setMessage(e.target.value)}/>      
+            <input style={{marginBottom:'10px'}} type="text" id="msg" name="msg" maxlength="70" placeholder="Message" onChange={(e) => setMessage(e.target.value)}/>      
             <div style={{display: 'flex', alignItems:'center'}}>
               <input style={{width: '30%', marginBottom:0}} type="number" step=".001" id="flowBid" name="flowBid" placeholder="Flow" onChange={(e) => setFlowBid(e.target.value)}/>
               <button style={{marginLeft: '10px'}} onClick={makeBid}>BID</button>
