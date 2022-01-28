@@ -16,4 +16,11 @@ window.onload = function() {
   const msg = document.getElementById('msg');
   msg.addEventListener('input', inputHandler);
   msg.addEventListener('propertychange', inputHandler);
+  
+  // reload to make sure the sketch is shown
+  const target = document.getElementById('bid-container');
+  var observer = new MutationObserver(function(){
+      location.reload();
+  });
+  observer.observe(target, { attributes: true, childList: true });
 }

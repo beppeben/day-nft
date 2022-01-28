@@ -37,11 +37,11 @@ describe("basic-test", ()=>{
     expect(balance).toEqual("12.00100000");
     await mintFlow(bob, 50.0);
     
-    const today = [25, 12, 2021];
-    const yesterday = [24, 12, 2021];
-    const day1 = [26, 12, 2021];
-    const day2 = [27, 12, 2021];
-    const day3 = [28, 12, 2021];
+    const today = [25, 1, 2021];
+    const yesterday = [24, 1, 2021];
+    const day1 = [26, 1, 2021];
+    const day2 = [27, 1, 2021];
+    const day3 = [28, 1, 2021];
     
     // bid on a different date than today (should give an error)
     var args = [10.0, "hello world", today, yesterday];

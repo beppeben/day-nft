@@ -222,37 +222,6 @@ function App() {
     fcl.tx(transactionId).subscribe(updateTx)
   }
 
-  const AuthedState = () => {
-    return (
-      <div>       
-        <button onClick={logOut}>LOGOUT</button>
-        <div class="infoList">Flow balance: {flowBalance ?? "ND"}</div>
-        <div class="infoList" style={{display: 'flex', alignItems:'center'}}>
-          Flow to claim: {Math.round(flowToClaim * 1000) / 1000}
-          {flowToClaim > 0?
-            <button style={{marginLeft: '10px'}} onClick={claimFlow}>CLAIM FLOW</button>
-            :<span></span>
-          }
-        </div>
-        <div class="infoList" style={{display: 'flex', alignItems:'center'}}>
-          NFTs to claim: {NFTsToClaim}
-          {NFTsToClaim > 0?
-            <button style={{marginLeft: '10px'}} onClick={claimNFTs}>CLAIM NFTs</button>
-            :<span></span>
-          }
-        </div>
-      </div>
-    )
-  }
-
-  const UnauthenticatedState = () => {
-    return (
-      <div>
-        <button onClick={fcl.authenticate}>CONNECT</button>
-      </div>
-    )
-  }
-
   function calcTimeToAuctionEnd() {
     let today = new Date();
     var res = ""
@@ -282,7 +251,7 @@ function App() {
       {props.loggedIn
         ? <div>
             <p>Current best bid: {Math.round(bestBid?.amount * 1000) / 1000} Flow</p>
-            {bestBid?.user == user?.addr ? <p class="bestBid">You hold the current best bid!</p>:<span></span>}
+            {bestBid?.user == user?.addr ? <p className="bestBid">You hold the current best bid!</p>:<span></span>}
             <p>Auction over in {timeToAuctionEnd}</p>
           </div>
         : <span></span>
@@ -305,9 +274,9 @@ function App() {
       <div className="grid">
         <div>
         <WelcomeText loggedIn={user?.loggedIn} />
-        <div style={{display: user?.loggedIn ? 'block' : 'none' }}>
+        <div id="bid-container" style={{display: user?.loggedIn ? 'block' : 'none' }}>
           <div>
-            <input style={{marginBottom:'10px'}} type="text" id="msg" name="msg" maxlength="70" placeholder="Message" onChange={(e) => setMessage(e.target.value)}/>      
+            <input style={{marginBottom:'10px'}} type="text" id="msg" name="msg" maxLength="70" placeholder="Message" onChange={(e) => setMessage(e.target.value)}/>      
             <div style={{display: 'flex', alignItems:'center'}}>
               <input style={{width: '30%', marginBottom:0}} type="number" step=".001" id="flowBid" name="flowBid" placeholder="Flow" onChange={(e) => setFlowBid(e.target.value)}/>
               <button style={{marginLeft: '10px'}} onClick={makeBid}>BID</button>
@@ -319,8 +288,27 @@ function App() {
         <div>
           <div className="center">
             {user?.loggedIn
-              ? <AuthedState />
-              : <UnauthenticatedState />
+              ? <div>       
+                  <button onClick={logOut}>LOGOUT</button>
+                  <div className="infoList">Flow balance: {flowBalance ?? "ND"}</div>
+                  <div className="infoList" style={{display: 'flex', alignItems:'center'}}>
+                    Flow to claim: {Math.round(flowToClaim * 1000) / 1000}
+                    {flowToClaim > 0?
+                      <button style={{marginLeft: '10px'}} onClick={claimFlow}>CLAIM FLOW</button>
+                      :<span></span>
+                    }
+                  </div>
+                  <div className="infoList" style={{display: 'flex', alignItems:'center'}}>
+                    NFTs to claim: {NFTsToClaim}
+                    {NFTsToClaim > 0?
+                      <button style={{marginLeft: '10px'}} onClick={claimNFTs}>CLAIM NFTs</button>
+                      :<span></span>
+                    }
+                  </div>
+                </div>
+              : <div>
+                  <button onClick={fcl.authenticate}>CONNECT</button>
+                </div>
             }
           </div>
         </div>

@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "node-p5": "^1.0.4"
+  }
+}

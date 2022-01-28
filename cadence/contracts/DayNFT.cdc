@@ -43,7 +43,7 @@ pub contract DayNFT: NonFungibleToken {
     pub event Deposit(id: UInt64, to: Address?)
 
     // Event emitted when a new NFT is minted
-    pub event Minted(id: UInt64, date: Date, title: String)
+    pub event Minted(id: UInt64, date: String, title: String)
 
     // Event emitted when a user makes a bid
     pub event BidReceived(user: Address, date: Date, title: String)
@@ -70,7 +70,7 @@ pub contract DayNFT: NonFungibleToken {
             self.title = title
             self.date = date
 
-            emit Minted(id: initID, date: date, title: title)
+            emit Minted(id: initID, date: date.toString(), title: title)
         }
 
         pub fun getViews(): [Type] {
@@ -527,8 +527,8 @@ pub contract DayNFT: NonFungibleToken {
 
         // Set named paths
         //FIXME: REMOVE SUFFIX BEFORE RELEASE
-        self.CollectionStoragePath = /storage/DayNFTCollection002
-        self.CollectionPublicPath = /public/DayNFTCollection002
+        self.CollectionStoragePath = /storage/DayNFTCollection003
+        self.CollectionPublicPath = /public/DayNFTCollection003
 
         self.totalSupply = 0
         self.amountsDue = {}

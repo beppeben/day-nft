@@ -1,4 +1,4 @@
-var sketchWithParams = function(date, message, n_pixels) {
+var sketchWithParams = function(date, message, n_pixels, font_path, out_path) {
 
   function xmur3(str) {
     for(var i = 0, h = 1779033703 ^ str.length; i < str.length; i++) {
@@ -22,12 +22,11 @@ var sketchWithParams = function(date, message, n_pixels) {
 
   let seed = xmur3(date.concat(message));
   let rand = mulberry32(seed());
-
+    
   let font_out = null;
   try {
-    font_out = p5.loadFont('slkscr.ttf');
+    font_out = p5.loadFont(font_path + 'silkscreen.ttf');
   } catch (err) {}
-
   
   let sketch = function(p) {
     var grid = [];
@@ -35,7 +34,7 @@ var sketchWithParams = function(date, message, n_pixels) {
     let font;
       
     p.preload = function() {
-      font = p.loadFont('slkscr.ttf')
+      font = p.loadFont('silkscreen.ttf')
     }
     
     p.setup = function() {
@@ -63,7 +62,7 @@ var sketchWithParams = function(date, message, n_pixels) {
       p.text(message, 0.5 * n_pixels, 0.9 * n_pixels)
 
       if (font_out != null) {
-        p.saveCanvas(c, date, 'png');
+        p.saveCanvas(c, out_path, 'png');
       }
     }
 
