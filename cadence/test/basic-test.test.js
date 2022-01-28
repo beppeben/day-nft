@@ -4,6 +4,14 @@ import {emulator, init, getAccountAddress, mintFlow, getFlowBalance,
 
 jest.setTimeout(10000);
 
+async function deployAll() {
+  var [deploymentResult, error] = await deployContractByName({name: "NonFungibleToken"});
+  var [deploymentResult, error] = await deployContractByName({name: "MetadataViews"});
+  const NonFungibleToken = await getContractAddress("NonFungibleToken");
+  const MetadataViews = await getContractAddress("MetadataViews");
+  [deploymentResult, error] = await deployContractByName({name: "DayNFT", addressMap: {NonFungibleToken, MetadataViews}});
+}
+
 describe("basic-test", ()=>{
   beforeEach(async () => {
     const basePath = path.resolve(__dirname, ".."); 
@@ -17,15 +25,22 @@ describe("basic-test", ()=>{
   afterEach(async () => {
     return emulator.stop();
   });
-  
-  test("bids", async () => {    
-    // deploy contracts
-    var [deploymentResult, error] = await deployContractByName({name: "NonFungibleToken"});
-    var [deploymentResult, error] = await deployContractByName({name: "MetadataViews"});
-    const NonFungibleToken = await getContractAddress("NonFungibleToken");
-    const MetadataViews = await getContractAddress("MetadataViews");
-    [deploymentResult, error] = await deployContractByName({name: "DayNFT", addressMap: {NonFungibleToken, MetadataViews}});
 
+  test("dates", async () => {    
+    await deployAll();
+
+    // check that the contract can successfully convert timestamps to days
+    const timestamp1 = Date.parse('04 Dec 2185 23:59:59 GMT')/1000
+    var [result,error] = await executeScript("get_date_from_timestamp", [timestamp1]);
+    expect(result).toEqual({"day": 4, "month": 12, "year": 2185});
+    const timestamp2 = Date.parse('05 Dec 2185 00:00:01 GMT')/1000
+    var [result,error] = await executeScript("get_date_from_timestamp", [timestamp2]);
+    expect(result).toEqual({"day": 5, "month": 12, "year": 2185});
+  })
+  
+  test("workflow", async () => {    
+    await deployAll();
+    
     // actors' addresses
     const alice = await getAccountAddress("Alice");
     const bob = await getAccountAddress("Bob");
@@ -37,6 +52,7 @@ describe("basic-test", ()=>{
     expect(balance).toEqual("12.00100000");
     await mintFlow(bob, 50.0);
     
+    // simulate events over a few days
     const today = [25, 1, 2021];
     const yesterday = [24, 1, 2021];
     const day1 = [26, 1, 2021];
@@ -106,7 +122,7 @@ describe("basic-test", ()=>{
     var [result, error] = await sendTransaction("claim_nfts_test", [bob], [day1]);
     expect(error).toBeNull();
 
-    // verify contract balance
+    // verify contract balance (50% of bob's minting price)
     [balance, error] = await getFlowBalance(myself);
     expect(balance).toEqual("1000000007.49500000");
     

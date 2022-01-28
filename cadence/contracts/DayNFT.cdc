@@ -194,6 +194,11 @@ pub contract DayNFT: NonFungibleToken {
     // Function to get today's date from the block's timestamp
     pub fun getDate(): Date {
         let timestamp = UInt64(getCurrentBlock().timestamp)
+        return self.getDateFromTimestamp(timestamp)
+    }
+
+    // Function to get a date a timestamp
+    pub fun getDateFromTimestamp(_ timestamp: UInt64): Date {
         let SECONDS_PER_DAY = 86400 as UInt64
         let INITIAL_TIMESTAMP = 1609459200 as UInt64
         let EPOCH_MONTH = 1
