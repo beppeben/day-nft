@@ -4,7 +4,7 @@ export function Transaction(props) {
   const Approval = () => {
     return (
       <div>
-        <span><kbd>Initializing</kbd><br /><small>Waiting for transaction approval.</small></span>
+        <span>Initializing<br /><small>Waiting for transaction approval.</small></span>
         <progress indeterminate="true">Initializing...</progress>
       </div>
     )
@@ -16,7 +16,7 @@ export function Transaction(props) {
         <span className="txId">
           <a href={`https://testnet.flowscan.org/transaction/${props.txId}`}>{props.txId?.slice(0, 8)}</a>
         </span>
-        <span><kbd>Pending</kbd><br /><small>The transaction has been received by a collector but not yet finalized in a block.</small></span>
+        <span>Pending<br /><small>The transaction has been received by a collector but not yet finalized in a block.</small></span>
         <progress indeterminate="true">Executing</progress>
       </div>
     )
@@ -28,7 +28,7 @@ export function Transaction(props) {
         <span className="txId">
           <a href={`https://testnet.flowscan.org/transaction/${props.txId}`}>{props.txId?.slice(0, 8)}</a>
         </span>
-        <span><kbd>Finalized</kbd><br /><small>The consensus nodes have finalized the block that the transaction is included in.</small></span>
+        <span>Finalized<br /><small>The consensus nodes have finalized the block that the transaction is included in.</small></span>
         <progress min="0" max="100" value="80">Executing...</progress>
       </div>
     )
@@ -41,7 +41,7 @@ export function Transaction(props) {
         <span className="txId">
           <a href={`https://testnet.flowscan.org/transaction/${props.txId}`}>{props.txId?.slice(0, 8)}</a>
         </span>
-        <span><kbd>Executed</kbd><br /><small>	The execution nodes have produced a result for the transaction.</small></span>
+        <span>Executed<br /><small>	The execution nodes have produced a result for the transaction.</small></span>
         <progress min="0" max="100" value="80">Sealing...</progress>
       </div>
     )
@@ -53,7 +53,7 @@ export function Transaction(props) {
         <span className="txId">
           <a href={`https://testnet.flowscan.org/transaction/${props.txId}`}>{props.txId?.slice(0, 8)}</a>
         </span>
-        <span><kbd>✓ Sealed</kbd><br /><small>The verification nodes have verified the transaction, and the seal is included in the latest block.</small></span>
+        <span>Sealed<br /><small>The verification nodes have verified the transaction, and the seal is included in the latest block.</small></span>
         <span className="txError"><br /><small>{props.transactionError}</small></span>
         <progress min="0" max="100" value="100">Sealed!</progress>
       </div>
@@ -67,7 +67,7 @@ export function Transaction(props) {
         <span className="txId">
           <a href={`https://testnet.flowscan.org/transaction/${props.txId}`}>{props.txId?.slice(0, 8)}</a>
         </span>
-        <span><kbd>Expired</kbd><br /><small>The transaction was submitted past its expiration block height.</small></span>
+        <span>Expired<br /><small>The transaction was submitted past its expiration block height.</small></span>
       </div>
     )
   }

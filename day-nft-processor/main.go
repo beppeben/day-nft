@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"math/rand"
 	"os/exec"
@@ -10,25 +11,49 @@ import (
 
 	"github.com/onflow/flow-go-sdk/client"
 	"google.golang.org/grpc"
-
-	"day-nft-processor/utils"
 )
 
+type Config struct {
+	Host         string
+	Address      string
+	SketchPath   string
+	ImgPath      string
+	MaxDepth     int
+	EverySeconds int
+}
+
 func main() {
-	config := utils.NewAppConfig()
+
+	config := readArgs()
+
 	block := queryAndProcessEvents(config, 0)
 
 	for {
-		time.Sleep(time.Duration(config.GetSecondsBetweenUpdates()) * time.Second)
+		time.Sleep(time.Duration(config.EverySeconds) * time.Second)
 		block = queryAndProcessEvents(config, block)
 	}
 
-	//select {}
 }
 
-func generateImage(config *utils.AppConfig, date string, message string) {
-	imgPath := config.GetImgDir() + date
-	cmd := exec.Command("node", "node_p5.js", config.GetSketchPath(), date, message, imgPath)
+func readArgs() Config {
+	hostPtr := flag.String("host", "", "")
+	addressPtr := flag.String("address", "", "")
+	sketchPathPtr := flag.String("sketch_path", "", "")
+	imgPathPtr := flag.String("img_path", "", "")
+	maxDepthPtr := flag.Int("max_depth", 0, "")
+	everySecondsPtr := flag.Int("every_seconds", 0, "")
+
+	flag.Parse()
+
+	config := Config{Host: *hostPtr, Address: *addressPtr, SketchPath: *sketchPathPtr,
+		ImgPath: *imgPathPtr, MaxDepth: *maxDepthPtr, EverySeconds: *everySecondsPtr}
+
+	return config
+}
+
+func generateImage(config Config, date string, message string) {
+	imgPath := config.ImgPath + date
+	cmd := exec.Command("node", "node_p5.js", config.SketchPath, date, message, imgPath)
 	_, err := cmd.Output()
 	if err != nil {
 		fmt.Println("[ERROR]: " + err.Error())
@@ -42,10 +67,10 @@ func min(a, b int) int {
 	return b
 }
 
-func queryAndProcessEvents(config *utils.AppConfig, lastBlock uint64) uint64 {
+func queryAndProcessEvents(config Config, lastBlock uint64) uint64 {
 	ctx := context.Background()
 
-	flowClient, err := client.New(config.GetAccessPoint(), grpc.WithInsecure())
+	flowClient, err := client.New(config.Host, grpc.WithInsecure())
 	if err != nil {
 		fmt.Println("[ERROR]: " + err.Error())
 		return 0
@@ -57,10 +82,10 @@ func queryAndProcessEvents(config *utils.AppConfig, lastBlock uint64) uint64 {
 		return 0
 	}
 
-	customType := fmt.Sprintf("A.%s.DayNFT.Minted", config.GetContractAddress())
+	customType := fmt.Sprintf("A.%s.DayNFT.Minted", config.Address)
 	end := block.Height
 	retries := 5
-	actualDepth := min(int((block.Height-lastBlock)/249+1), config.GetMaxDepth())
+	actualDepth := min(int((block.Height-lastBlock)/249+1), config.MaxDepth)
 	fmt.Printf("[INFO]: Starting update with depth %d", actualDepth)
 	fmt.Println()
 	var wg sync.WaitGroup
@@ -91,7 +116,7 @@ func queryAndProcessEvents(config *utils.AppConfig, lastBlock uint64) uint64 {
 	return block.Height
 }
 
-func processEvents(config *utils.AppConfig, result []client.BlockEvents) {
+func processEvents(config Config, result []client.BlockEvents) {
 	for _, block := range result {
 		for _, event := range block.Events {
 			date := event.Value.Fields[1].String()

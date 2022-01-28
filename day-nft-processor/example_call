@@ -1,0 +1,1 @@
+./day-nft-processor -host="access.devnet.nodes.onflow.org:9000" -address="102391d8c38dc940" -sketch_path="/home/giuseppe/day-nft/day-nft-app/public/" -img_path="/home/giuseppe/Desktop/" -max_depth=1500 -every_seconds=20

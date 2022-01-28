@@ -9,7 +9,7 @@ eval(fs.readFileSync(sketch_path + 'sketch.js')+'');
 p5.createSketch(sketchWithParams(date, message, 600, sketch_path, out_path));
 setTimeout(function() {
     process.exit();
-}, 1000);
+}, 3000);
 
 
 

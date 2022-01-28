@@ -233,6 +233,9 @@ function App() {
           + minutes.toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false}) + ":"
           + seconds.toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})
     setTimeToAuctionEnd(res)
+    if (hours == 23 && minutes == 59 && seconds == 59) {
+      onAuthenticate(user)
+    }
   }
 
   setInterval(calcTimeToAuctionEnd, 1000);

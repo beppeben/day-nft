@@ -1,6 +1,0 @@
-ACCESS_POINT = "access.devnet.nodes.onflow.org:9000"
-CONTRACT_ADDRESS = "102391d8c38dc940"
-SKETCH_PATH = "/home/giuseppe/day-nft/day-nft-app/public/"
-IMG_DIR = "/home/giuseppe/Desktop/"
-MAX_DEPTH = 1500
-SECONDS_BETWEEN_UPDATES = 20
