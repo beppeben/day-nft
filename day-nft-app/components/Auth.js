@@ -16,6 +16,7 @@ function App() {
   const [transactionError, setTransactionError] = useState(null)
   const [txId, setTxId] = useState(null)
   const [timeToAuctionEnd, setTimeToAuctionEnd] = useState("")
+
   
   async function onAuthenticate(user) {
     setUser(user)
@@ -238,17 +239,29 @@ function App() {
     }
   }
 
-  setInterval(calcTimeToAuctionEnd, 1000);
+  //setInterval(calcTimeToAuctionEnd, 1000);
+
+  useEffect(() => {
+    let timer = setInterval(calcTimeToAuctionEnd, 1000);
+
+    return () => {
+      clearInterval(timer);
+    }
+  }, [])
   
 
   const WelcomeText = (props) => {
     return (
     <div className="center-text">
       {!props.loggedIn?
+        <div>
+        <p>Day-NFTs are like digital postcards, with added rarity and rewards.</p>
         <ul>
-          <li>Only one customized Day-NFT is minted every day to the highest bidder.</li>
+          <li>Only one Day-NFT is minted every day to the highest bidder (all the others get refunded).</li>
+          <li>It comes with a random artwork which depends on the posted message.</li>        
           <li>50% of all earnings from mints and marketplace fees are redistributed back to NFT holders.</li>
         </ul>
+        </div>
         :<span></span>
       }
       {props.loggedIn
@@ -285,7 +298,8 @@ function App() {
               <button style={{marginLeft: '10px'}} onClick={makeBid}>BID</button>
             </div>
           </div>
-          <div style={{marginTop: '20px'}} id="p5sketch" className="center"></div>
+          <div style={{marginTop: '20px'}} id="p5sketch" className="center">
+          </div>
         </div>
         </div>
         <div>

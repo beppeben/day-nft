@@ -1,4 +1,13 @@
 window.onload = function() {
+  loadSketch();
+}
+
+console.log(document.getElementById('p5sketch'))
+if(document.getElementById('p5sketch') != null) {
+  loadSketch();
+}
+
+function loadSketch() {
   var today = new Date();
   var date = today.getUTCDate().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false}) + 
               '-' + (today.getUTCMonth()+1).toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false}) + 

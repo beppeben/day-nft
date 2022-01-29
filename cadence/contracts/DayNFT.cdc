@@ -65,7 +65,7 @@ pub contract DayNFT: NonFungibleToken {
             self.id = initID
             self.name = "DAY-NFT #".concat(dateStr)
             self.description = "Minted on day-nft.io on ".concat(dateStr)
-            self.thumbnail = "https://day-nft.io/imgs/".concat(dateStr).concat(".jpg")
+            self.thumbnail = "https://day-nft.io/imgs/".concat(dateStr).concat(".png")
 
             self.title = title
             self.date = date

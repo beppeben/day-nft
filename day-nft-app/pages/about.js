@@ -4,23 +4,22 @@ export default function About() {
   return (
     <div>
       <Head>
-        <title>About</title>
+        <title>About DAY-NFT</title>
+        <meta name="description" content="About DAY-NFT" />
+        <link rel="icon" href="/favicon.png" />
+        <link href="http://fonts.cdnfonts.com/css/silkscreen" rel="stylesheet" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js" />
+        <script src="sketch.js" />
       </Head>
       <div className="container">
-        <h1>About this app</h1>
-        <p>
-          This is a <a href="https://docs.onflow.org/fcl">FCL-powered</a> app built on <a href="http://onflow.org">Flow</a>.
-        </p>
-        <p>
-          This app shows how to:
-        </p>
+        <div className="center-text">
+        <p>Day-NFTs are like digital postcards, with added rarity and rewards.</p>
         <ul>
-          <li>Authenticate a user on the Flow blockchain.</li>
-          <li>Import a contract to let a user create a profile and query the blockchain for their data.</li>
-          <li>Let a user modify their profile and mutate the blockchain to save changes.</li>
+          <li>Only one Day-NFT is minted every day to the highest bidder (all the others get refunded).</li>
+          <li>It comes with a random artwork which depends on the posted message.</li>        
+          <li>50% of all earnings from mints and marketplace fees are redistributed back to NFT holders.</li>
         </ul>
-
-        <p>Use this app as a starting template to build your very own web3 app, powered on Flow! Flow is a fast, decentralized, and developer-friendly blockchain, designed as the foundation for a new generation of games, apps, and the digital assets that power them. It is based on a unique, multi-role architecture, and designed to scale without sharding, allowing for massive improvements in speed and throughput while preserving a developer-friendly, ACID-compliant environment.</p>
+        </div>
       </div>
     </div>
   )

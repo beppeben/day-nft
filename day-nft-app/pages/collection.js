@@ -1,28 +1,23 @@
 import Head from 'next/head'
-import Auth from '../components/Auth'
-import Script from 'next/script'
+import Collection from '../components/Collection'
 
 export default function Home() {
   return (
     <div>
       <Head>
-        <title>DAY-NFT</title>
-        <meta name="description" content="DAY-NFT minting app" />
+        <title>DAY-NFT Collection</title>
+        <meta name="description" content="DAY-NFT collection" />
         <link rel="icon" href="/favicon.png" />
         <link href="http://fonts.cdnfonts.com/css/silkscreen" rel="stylesheet" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js" />
         <script src="sketch.js" />
-        <script src="functions.js" />
       </Head>
       
-
       <main>
         <div className="grid">
-          <Auth />
+          <Collection />
         </div>
       </main>
-
-      
 
     </div>
   )

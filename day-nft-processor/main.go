@@ -51,8 +51,8 @@ func readArgs() Config {
 	return config
 }
 
-func generateImage(config Config, date string, message string) {
-	imgPath := config.ImgPath + date
+func generateImage(config Config, name string, date string, message string) {
+	imgPath := config.ImgPath + name
 	cmd := exec.Command("node", "node_p5.js", config.SketchPath, date, message, imgPath)
 	_, err := cmd.Output()
 	if err != nil {
@@ -119,12 +119,13 @@ func queryAndProcessEvents(config Config, lastBlock uint64) uint64 {
 func processEvents(config Config, result []client.BlockEvents) {
 	for _, block := range result {
 		for _, event := range block.Events {
+			id := event.Value.Fields[0].String()
 			date := event.Value.Fields[1].String()
 			date = date[1 : len(date)-1]
 			message := event.Value.Fields[2].String()
 			message = message[1 : len(message)-1]
 			fmt.Println("[INFO]: Generating image for date " + date)
-			generateImage(config, date, message)
+			generateImage(config, id, date, message)
 		}
 	}
 }
