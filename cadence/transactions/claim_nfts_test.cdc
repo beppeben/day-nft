@@ -8,13 +8,13 @@ transaction(today_arr: [Int]) {
 
     prepare(signer: AuthAccount) {
         if (signer.getCapability(DayNFT.CollectionPublicPath)
-            .borrow<&DayNFT.Collection{NonFungibleToken.CollectionPublic}>() == nil) {
+            .borrow<&DayNFT.Collection{DayNFT.CollectionPublic}>() == nil) {
             // Create a Collection resource and save it to storage
             let collection <- DayNFT.createEmptyCollection()
             signer.save(<-collection, to: DayNFT.CollectionStoragePath)
 
             // create a public capability for the collection
-            signer.link<&DayNFT.Collection{NonFungibleToken.CollectionPublic}>(
+            signer.link<&DayNFT.Collection{DayNFT.CollectionPublic}>(
                 DayNFT.CollectionPublicPath,
                 target: DayNFT.CollectionStoragePath
             )

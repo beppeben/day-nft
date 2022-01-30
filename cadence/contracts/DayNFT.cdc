@@ -10,6 +10,7 @@ pub contract DayNFT: NonFungibleToken {
     // Named Paths
     pub let CollectionStoragePath: StoragePath
     pub let CollectionPublicPath: PublicPath
+    pub let AdminPublicPath: PublicPath
 
     // Total supply of NFTs in existence
     pub var totalSupply: UInt64
@@ -58,14 +59,15 @@ pub contract DayNFT: NonFungibleToken {
 
         pub let title: String
         pub let date: Date
+        pub let dateStr: String
 
         init(initID: UInt64, date: Date, title: String) {
-            let dateStr = date.toString()
+            self.dateStr = date.toString()
 
             self.id = initID
-            self.name = "DAY-NFT #".concat(dateStr)
-            self.description = "Minted on day-nft.io on ".concat(dateStr)
-            self.thumbnail = "https://day-nft.io/imgs/".concat(dateStr).concat(".png")
+            self.name = "DAY-NFT #".concat(self.dateStr)
+            self.description = "Minted on day-nft.io on ".concat(self.dateStr)
+            self.thumbnail = "https://day-nft.io/imgs/".concat(initID.toString()).concat(".png")
 
             self.title = title
             self.date = date
@@ -95,8 +97,25 @@ pub contract DayNFT: NonFungibleToken {
         }
     }
 
+    // This is the interface that users can cast their DayNFT Collection as
+    // to allow others to deposit DayNFT into their Collection. It also allows for reading
+    // the details of a DayNFT in the Collection.
+    pub resource interface CollectionPublic {
+        pub fun deposit(token: @NonFungibleToken.NFT)
+        pub fun getIDs(): [UInt64]
+        pub fun borrowNFT(id: UInt64): &NonFungibleToken.NFT
+        pub fun borrowDayNFT(id: UInt64): &DayNFT.NFT? {
+            // If the result isn't nil, the id of the returned reference
+            // should be the same as the argument to the function
+            post {
+                (result == nil) || (result?.id == id):
+                    "Cannot borrow DayNFT reference: The ID of the returned reference is incorrect"
+            }
+        }
+    }
+
     // Collection of NFTs implementing standard interfaces
-    pub resource Collection: NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.CollectionPublic {
+    pub resource Collection: CollectionPublic, NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.CollectionPublic {
         // dictionary of NFT conforming tokens
         // NFT is a resource type with an `UInt64` ID field
         pub var ownedNFTs: @{UInt64: NonFungibleToken.NFT}
@@ -138,6 +157,17 @@ pub contract DayNFT: NonFungibleToken {
         // so that the caller can read its metadata and call its methods
         pub fun borrowNFT(id: UInt64): &NonFungibleToken.NFT {
             return &self.ownedNFTs[id] as &NonFungibleToken.NFT
+        }
+
+        // Gets a reference to an NFT in the collection as a DayNFT,
+        // exposing all of its fields.
+        pub fun borrowDayNFT(id: UInt64): &DayNFT.NFT? {
+            if self.ownedNFTs[id] != nil {
+                let ref = &self.ownedNFTs[id] as auth &NonFungibleToken.NFT
+                return ref as! &DayNFT.NFT
+            } else {
+                return nil
+            }
         }
 
         destroy() {
@@ -417,7 +447,7 @@ pub contract DayNFT: NonFungibleToken {
         var res = 0
         let receiver = getAccount(address)
           .getCapability(self.CollectionPublicPath)
-          .borrow<&{NonFungibleToken.CollectionPublic}>()
+          .borrow<&{DayNFT.CollectionPublic}>()
           ?? panic("Could not get receiver reference to the NFT Collection")
 
         if(self.NFTsDue[address] != nil) {
@@ -458,7 +488,7 @@ pub contract DayNFT: NonFungibleToken {
         // borrow the recipient's public NFT collection reference
         let holder = getAccount(address)
                       .getCapability(self.CollectionPublicPath)
-                      .borrow<&DayNFT.Collection{NonFungibleToken.CollectionPublic}>()
+                      .borrow<&DayNFT.Collection{DayNFT.CollectionPublic}>()
                       ?? panic("Could not get receiver reference to the NFT Collection")
 
         // compute amount due based on number of NFTs detained
@@ -474,7 +504,7 @@ pub contract DayNFT: NonFungibleToken {
         // borrow the recipient's public NFT collection reference
         let holder = getAccount(address)
                       .getCapability(self.CollectionPublicPath)
-                      .borrow<&DayNFT.Collection{NonFungibleToken.CollectionPublic}>()
+                      .borrow<&DayNFT.Collection{DayNFT.CollectionPublic}>()
                       ?? panic("Could not get receiver reference to the NFT Collection")
 
         // borrow the recipient's flow token receiver
@@ -528,12 +558,30 @@ pub contract DayNFT: NonFungibleToken {
         }
     }
 
+    // Resource to receive Flow tokens to be distributed
+    pub resource Admin: FungibleToken.Receiver {
+        pub fun deposit(from: @FungibleToken.Vault) {
+            DayNFT.deposit(vault: <-from)
+        }
+    }
+
     init() {
 
         // Set named paths
         //FIXME: REMOVE SUFFIX BEFORE RELEASE
-        self.CollectionStoragePath = /storage/DayNFTCollection003
-        self.CollectionPublicPath = /public/DayNFTCollection003
+        self.CollectionStoragePath = /storage/DayNFTCollection005
+        self.CollectionPublicPath = /public/DayNFTCollection005
+        self.AdminPublicPath = /public/DayNFTAdmin005
+        let adminStoragePath = /storage/DayNFTAdmin005
+
+        let admin <- create Admin()
+        self.account.save(<-admin, to: adminStoragePath)
+        // Create a public capability allowing external users (like marketplaces)
+        // to deposit flow to the contract
+        self.account.link<&DayNFT.Admin{FungibleToken.Receiver}>(
+            self.AdminPublicPath,
+            target: adminStoragePath
+        )
 
         self.totalSupply = 0
         self.amountsDue = {}

@@ -22,24 +22,26 @@ function App() {
   }
   
   const getNFTIds = async (address) => {
-    const ids = await fcl.query({
-      cadence: `
-        import DayNFT from 0xDayNFT
-        import NonFungibleToken from 0xNonFungibleToken
+    try{
+      // this throws when NFT collection is not initialized
+      const ids = await fcl.query({
+        cadence: `
+          import DayNFT from 0xDayNFT
 
-        pub fun main(account: Address): [UInt64] {
-            let collectionRef = getAccount(account)
-                .getCapability(DayNFT.CollectionPublicPath)
-                .borrow<&DayNFT.Collection{NonFungibleToken.CollectionPublic}>()
-                ?? panic("Could not get reference to the NFT Collection")
+          pub fun main(account: Address): [UInt64] {
+              let collectionRef = getAccount(account)
+                  .getCapability(DayNFT.CollectionPublicPath)
+                  .borrow<&DayNFT.Collection{DayNFT.CollectionPublic}>()
+                  ?? panic("Could not get reference to the NFT Collection")
 
-            return collectionRef.getIDs()
-        }
-      `,
-      args: (arg, t) => [arg(address, t.Address)]
-    })
+              return collectionRef.getIDs()
+          }
+        `,
+        args: (arg, t) => [arg(address, t.Address)]
+      })
 
-    setNFTIds(ids)
+      setNFTIds(ids)
+    } catch(e){}
   }
  
   const WelcomeText = (props) => {
@@ -58,6 +60,9 @@ function App() {
           {NFTIds.map((value, index) => {
             return <img className="collection-img" src={"imgs/" + index + ".png"}/>
           })}
+          {NFTIds.length == 0
+           ? <p>Collection empty</p> : <span></span>
+          }
           <div></div>
         </div>    
       </div>

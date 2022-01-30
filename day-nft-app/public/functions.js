@@ -2,7 +2,6 @@ window.onload = function() {
   loadSketch();
 }
 
-console.log(document.getElementById('p5sketch'))
 if(document.getElementById('p5sketch') != null) {
   loadSketch();
 }

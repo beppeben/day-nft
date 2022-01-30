@@ -26,6 +26,23 @@ describe("basic-test", ()=>{
     return emulator.stop();
   });
 
+  test("deposit", async () => {    
+    await deployAll();
+    
+    const myself = await getContractAddress("DayNFT");
+    const marketplace = await getAccountAddress("Marketplace");
+    await mintFlow(marketplace, 50.0);
+
+    // deposit a cut of fees from marketplace
+    var [result, error] = await sendTransaction("deposit_flow", [marketplace], [10.0, myself]);
+    expect(error).toBeNull();
+
+    // verify that half of it gets deposited in the contract's vault
+    // (the other half will go to NFT holders)
+    var [balance, error] = await getFlowBalance(myself);
+    expect(balance).toEqual("1000000004.99600000");
+  })
+
   test("dates", async () => {    
     await deployAll();
 
@@ -140,7 +157,9 @@ describe("basic-test", ()=>{
 
     // read bob's NFT
     var [result,error] = await executeScript("read_nft", [bob, 0]);
-    expect(result["title"]).toEqual("hello world2");
+    var exp_res = {"date": {"day": 25, "month": 1, "year": 2021}, "dateStr": "25-01-2021", "description": "Minted on day-nft.io on 25-01-2021", "id": 0, "name": "DAY-NFT #25-01-2021", "thumbnail": "https://day-nft.io/imgs/0.png", "title": "hello world2"}
+    exp_res["uuid"] = result["uuid"]
+    expect(result).toEqual(exp_res);
 
     // verify if bob has any flow to claim
     var [result,error] = await executeScript("read_tokens_to_claim", [bob]);
