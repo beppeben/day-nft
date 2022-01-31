@@ -37,10 +37,10 @@ describe("basic-test", ()=>{
     var [result, error] = await sendTransaction("deposit_flow", [marketplace], [10.0, myself]);
     expect(error).toBeNull();
 
-    // verify that half of it gets deposited in the contract's vault
-    // (the other half will go to NFT holders)
+    // verify that it all gets deposited into the contract's vault
+    // (as there are no NFT holders)
     var [balance, error] = await getFlowBalance(myself);
-    expect(balance).toEqual("1000000004.99600000");
+    expect(balance).toEqual("1000000009.99600000");
   })
 
   test("dates", async () => {    
@@ -62,12 +62,14 @@ describe("basic-test", ()=>{
     const alice = await getAccountAddress("Alice");
     const bob = await getAccountAddress("Bob");
     const myself = await getContractAddress("DayNFT");
+    const marketplace = await getAccountAddress("Marketplace");
     
     // give some flow to users
     await mintFlow(alice, 12.0);
     var [balance, error] = await getFlowBalance(alice);
     expect(balance).toEqual("12.00100000");
     await mintFlow(bob, 50.0);
+    await mintFlow(marketplace, 50.0);
     
     // simulate events over a few days
     const today = [25, 1, 2021];
@@ -75,6 +77,8 @@ describe("basic-test", ()=>{
     const day1 = [26, 1, 2021];
     const day2 = [27, 1, 2021];
     const day3 = [28, 1, 2021];
+
+    // TODAY
     
     // bid on a different date than today (should give an error)
     var args = [10.0, "hello world", today, yesterday];
@@ -153,9 +157,9 @@ describe("basic-test", ()=>{
     var [result, error] = await sendTransaction("claim_nfts_test", [bob], [day1]);
     expect(error).toBeNull();
 
-    // verify contract balance (50% of bob's minting price)
+    // verify contract balance (100% of bob's minting price because there were no NFT holders before bob)
     [balance, error] = await getFlowBalance(myself);
-    expect(balance).toEqual("1000000007.49500000");
+    expect(balance).toEqual("1000000014.99400000");
     
     // read total supply
     var [result,error] = await executeScript("read_total_supply", []);
@@ -236,6 +240,14 @@ describe("basic-test", ()=>{
     // same for bob
     var [result,error] = await executeScript("read_tokens_to_claim", [bob]);
     expect(result).toEqual("0.50000000");
+
+    // deposit a cut of fees from marketplace
+    var [result, error] = await sendTransaction("deposit_flow", [marketplace], [10.0, myself]);
+    expect(error).toBeNull();
+
+    // verify that 50% of it gets deposited into the contract's vault
+    var [balance, error] = await getFlowBalance(myself);
+    expect(balance).toEqual("1000000023.49400000");
     
   })
 })

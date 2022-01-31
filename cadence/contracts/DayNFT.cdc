@@ -543,7 +543,10 @@ pub contract DayNFT: NonFungibleToken {
                     .borrow<&FlowToken.Vault{FungibleToken.Receiver}>()
                     ?? panic("Could not borrow a reference to the receiver")
         let amount = vault.balance
-        let distribute = amount * self.percentageDistributed
+        var distribute = amount * self.percentageDistributed
+        if (self.totalSupply == 0) {
+            distribute = 0.0
+        }
         let distrVault <- vault.withdraw(amount: distribute)
         self.distributeVault.deposit(from: <- distrVault)
         rec.deposit(from: <- vault)
@@ -569,10 +572,10 @@ pub contract DayNFT: NonFungibleToken {
 
         // Set named paths
         //FIXME: REMOVE SUFFIX BEFORE RELEASE
-        self.CollectionStoragePath = /storage/DayNFTCollection006
-        self.CollectionPublicPath = /public/DayNFTCollection006
-        self.AdminPublicPath = /public/DayNFTAdmin006
-        let adminStoragePath = /storage/DayNFTAdmin006
+        self.CollectionStoragePath = /storage/DayNFTCollection007
+        self.CollectionPublicPath = /public/DayNFTCollection007
+        self.AdminPublicPath = /public/DayNFTAdmin007
+        let adminStoragePath = /storage/DayNFTAdmin007
 
         let admin <- create Admin()
         self.account.save(<-admin, to: adminStoragePath)
