@@ -346,7 +346,7 @@ pub contract DayNFT: NonFungibleToken {
                             .borrow<&FlowToken.Vault{FungibleToken.Receiver}>()
                             ?? panic("Could not borrow a reference to the receiver")
                 var tempVault <- FlowToken.createEmptyVault() as! @FlowToken.Vault
-                tempVault <-> self.bestBid.vault
+                tempVault <-> bid.vault
                 rec.deposit(from: <- tempVault)
                 destroy bid
             }
@@ -473,7 +473,7 @@ pub contract DayNFT: NonFungibleToken {
             // replace old best bid with a default one for today
             let vault <- FlowToken.createEmptyVault() as! @FlowToken.Vault 
             var bid <- create Bid(vault: <- vault, 
-                  recipient: self.account.address,
+                  recipient: Address(0x0),
                   title: "",
                   date: today)
             self.bestBid <-> bid
@@ -569,10 +569,10 @@ pub contract DayNFT: NonFungibleToken {
 
         // Set named paths
         //FIXME: REMOVE SUFFIX BEFORE RELEASE
-        self.CollectionStoragePath = /storage/DayNFTCollection005
-        self.CollectionPublicPath = /public/DayNFTCollection005
-        self.AdminPublicPath = /public/DayNFTAdmin005
-        let adminStoragePath = /storage/DayNFTAdmin005
+        self.CollectionStoragePath = /storage/DayNFTCollection006
+        self.CollectionPublicPath = /public/DayNFTCollection006
+        self.AdminPublicPath = /public/DayNFTAdmin006
+        let adminStoragePath = /storage/DayNFTAdmin006
 
         let admin <- create Admin()
         self.account.save(<-admin, to: adminStoragePath)

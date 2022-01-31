@@ -100,6 +100,20 @@ describe("basic-test", ()=>{
     expect(result.amount).toEqual("10.00000000");
     expect(result.user).toEqual(alice);
 
+    // make another bid by alice for a lower price
+    var args = [1.5, "hey hey", today, today];
+    var [tx, error] = await sendTransaction("make_bid_test", [alice], args);
+    expect(error).toBeNull();
+
+    // verify best bid hasn't changed
+    var [result,error] = await executeScript("read_best_bid_test", [today]);
+    expect(result.amount).toEqual("10.00000000");
+    expect(result.user).toEqual(alice);
+
+    // verify alice's balance hasn't changed
+    [balance, error] = await getFlowBalance(alice);
+    expect(balance).toEqual("2.00100000");
+
     // bid on today's nft by bob (for a higher amount)
     var args = [15.0, "hello world2", today, today];
     var [tx, error] = await sendTransaction("make_bid_test", [bob], args);
