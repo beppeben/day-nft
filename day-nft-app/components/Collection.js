@@ -1,6 +1,7 @@
 import "../flow/config";
 import { useState, useEffect } from "react";
 import * as fcl from "@onflow/fcl";
+import Image from 'next/image'
 
 function App() {
   const [user, setUser] = useState({ loggedIn: null })
@@ -58,7 +59,7 @@ function App() {
         <div>
           <WelcomeText />
           {NFTIds.map((value, index) => {
-            return <img className="collection-img" src={"imgs/" + index + ".png"}/>
+            return <Image key={index} alt={value} className="collection-img" src={"imgs/" + index + ".png"}/>
           })}
           {NFTIds.length == 0
            ? <p>Collection empty</p> : <span></span>
