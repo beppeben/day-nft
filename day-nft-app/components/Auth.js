@@ -254,11 +254,12 @@ function App() {
     <div className="center-text">
       {!props.loggedIn?
         <div>
-        <p>Day-NFTs are like digital postcards, with added rarity and rewards.</p>
+        <p>Day-NFTs are like digital postcards, with added rarity, community and rewards.</p>
         <ul>
           <li>Only one Day-NFT is minted every day to the highest bidder (all the others get refunded).</li>
           <li>It comes with a random artwork which depends on the posted message.</li>        
-          <li>50% of all earnings from mints and marketplace fees are redistributed back to NFT holders.</li>
+          <li>50% of all earnings from mints and transfer fees are redistributed back to NFT holders.</li>
+          <li>Discord community and marketplace will come soon.</li>
         </ul>
         </div>
         :<span></span>
@@ -297,7 +298,7 @@ function App() {
               <button style={{marginLeft: '10px'}} onClick={makeBid}>BID</button>
             </div>
           </div>
-          <div style={{marginTop: '20px'}} id="p5sketch" className="center">
+          <div id="p5sketch" className="center">
           </div>
         </div>
         </div>
@@ -305,7 +306,6 @@ function App() {
           <div className="center">
             {user?.loggedIn
               ? <div>       
-                  <button onClick={logOut}>LOGOUT</button>
                   <div className="infoList">Flow balance: {flowBalance ?? "ND"}</div>
                   <div className="infoList" style={{display: 'flex', alignItems:'center'}}>
                     Flow to claim: {Math.round(flowToClaim * 1000) / 1000}
@@ -321,6 +321,7 @@ function App() {
                       :<span></span>
                     }
                   </div>
+                  <button onClick={logOut}>LOGOUT</button>
                 </div>
               : <div>
                   <button onClick={fcl.authenticate}>CONNECT</button>

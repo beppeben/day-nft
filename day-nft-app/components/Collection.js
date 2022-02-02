@@ -58,7 +58,7 @@ function App() {
         <div>
           <WelcomeText />
           {NFTIds.map((value, index) => {
-            return <img key={index} alt={value} className="collection-img" src={"imgs/" + index + ".png"}/>
+            return <a href={"imgs/" + index + ".png"}><img key={index} alt={value} className="collection-img" src={"imgs/" + index + ".png"}/></a>
           })}
           {NFTIds.length == 0 && user?.loggedIn
            ? <p>Collection empty</p> : <span></span>

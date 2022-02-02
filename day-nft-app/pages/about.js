@@ -13,11 +13,12 @@ export default function About() {
       </Head>
       <div className="container">
         <div className="center-text">
-        <p>Day-NFTs are like digital postcards, with added rarity and rewards.</p>
+        <p>Day-NFTs are like digital postcards, with added rarity, community and rewards.</p>
         <ul>
           <li>Only one Day-NFT is minted every day to the highest bidder (all the others get refunded).</li>
           <li>It comes with a random artwork which depends on the posted message.</li>        
-          <li>50% of all earnings from mints and marketplace fees are redistributed back to NFT holders.</li>
+          <li>50% of all earnings from mints and transfer fees are redistributed back to NFT holders.</li>
+          <li>Discord community and marketplace will come soon.</li>
         </ul>
         </div>
       </div>

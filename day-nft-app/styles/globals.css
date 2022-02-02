@@ -14,7 +14,7 @@
   :root:not([data-theme="light"]) {
     --primary: #00ee8a;
     --primary-hover: #00ce78;
-    --primary-focus: #FFF;
+    --primary-focus: --background-color;
     --primary-inverse: #FFF;
   }
 }
@@ -24,7 +24,7 @@
 [data-theme="dark"] {
   --primary: #00ee8a;
   --primary-hover: #00ce78;
-  --primary-focus: #FFF;
+  --primary-focus: --background-color;
   --primary-inverse: #FFF;
 }
 
@@ -121,6 +121,7 @@ input{
 
 #p5sketch{
   width:80%;
+  margin-top:20px;
   margin-left:auto;
   margin-right:auto;
   margin-bottom:30px;

@@ -14,6 +14,11 @@ function loadSketch() {
 
   const sketch = document.getElementById('p5sketch');
   var n_pixels = sketch.offsetWidth;
+  
+  if (n_pixels == 0) {
+    n_pixels = 250;
+  }
+
   var myp5 = new p5(sketchWithParams(date, "What's the point of NFTs?", n_pixels), 'p5sketch');
 
   const inputHandler = function(e) {
@@ -26,9 +31,11 @@ function loadSketch() {
   msg.addEventListener('propertychange', inputHandler);
   
   // reload to make sure the sketch is shown
+  /*
   const target = document.getElementById('bid-container');
   var observer = new MutationObserver(function(){
-      location.reload();
+      //location.reload();
   });
   observer.observe(target, { attributes: true, childList: true });
+  */
 }
