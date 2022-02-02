@@ -6,8 +6,8 @@ export default function About() {
       <Head>
         <title>About DAY-NFT</title>
         <meta name="description" content="About DAY-NFT" />
-        <link rel="icon" href="/favicon.png" />
-        <link href="http://fonts.cdnfonts.com/css/silkscreen" rel="stylesheet" />
+        <link rel="icon" href="/thumbnail.png" />
+        <link href="https://fonts.cdnfonts.com/css/silkscreen" rel="stylesheet" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js" />
         <script src="sketch.js" />
       </Head>
