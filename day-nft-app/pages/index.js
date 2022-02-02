@@ -10,7 +10,7 @@ export default function Home() {
         <meta name="description" content="DAY-NFT minting app" />
         <link rel="icon" href="/favicon.png" />
         <link href="http://fonts.cdnfonts.com/css/silkscreen" rel="stylesheet" />
-        <meta property="og:image" content="http://test.day-nft.io/thumbnail.png" />
+        <meta property="og:image" content="/thumbnail.png" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js" />
         <script src="sketch.js" />
         <script src="functions.js" />

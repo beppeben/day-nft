@@ -14,7 +14,6 @@ function loadSketch() {
 
   const panel = document.getElementById('left-panel');
   var n_pixels = panel.offsetWidth * 0.8; 
-  console.log(n_pixels);
   if (n_pixels == 0) {   
     n_pixels = 250;
   }
