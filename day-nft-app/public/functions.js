@@ -13,8 +13,7 @@ function loadSketch() {
               '-' + today.getUTCFullYear();
 
   const sketch = document.getElementById('p5sketch');
-  var n_pixels = sketch.offsetWidth;
-  
+  var n_pixels = sketch.offsetWidth; 
   if (n_pixels == 0) {
     n_pixels = 250;
   }
