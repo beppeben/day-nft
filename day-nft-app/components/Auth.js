@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import * as fcl from "@onflow/fcl";
 import { Transaction } from "./Transaction";
 
+
 function App() {
   const [user, setUser] = useState({ loggedIn: null })
   const [flowBalance, setFlowBalance] = useState(false)
@@ -22,7 +23,7 @@ function App() {
     setUser(user)
     if (user?.addr != null) {
       const account = await fcl.account(user.addr);
-      setFlowBalance(account.balance / 100000000);
+      setFlowBalance(Math.round(account.balance / 100000000 * 100) / 100);
       getFlowToClaim(user.addr);
       getNFTsToClaim(user.addr);
       getBestBid();
@@ -266,7 +267,7 @@ function App() {
       }
       {props.loggedIn
         ? <div>
-            <p>Current best bid: {Math.round(bestBid?.amount * 1000) / 1000} Flow</p>
+            <p>Current best bid: {Math.round(bestBid?.amount * 100) / 100} Flow</p>
             {bestBid?.user == user?.addr ? <p className="bestBid">You hold the current best bid!</p>:<span></span>}
             <p>Auction over in {timeToAuctionEnd}</p>
           </div>
@@ -288,7 +289,7 @@ function App() {
         : <span></span>
       }
       <div className="grid">
-        <div>
+        <div id="left-panel">
         <WelcomeText loggedIn={user?.loggedIn} />
         <div id="bid-container" style={{display: user?.loggedIn ? 'block' : 'none' }}>
           <div>
@@ -302,22 +303,26 @@ function App() {
           </div>
         </div>
         </div>
-        <div>
+        <div id="right-panel">
           <div className="center">
             {user?.loggedIn
-              ? <div>       
-                  <div className="infoList">Flow balance: {flowBalance ?? "ND"}</div>
+              ? <div>
+                  <div className="infoList">Address: {user.addr}</div>
                   <div className="infoList" style={{display: 'flex', alignItems:'center'}}>
-                    Flow to claim: {Math.round(flowToClaim * 1000) / 1000}
+                    Flow balance: {flowBalance ?? "ND"}
+                    <a target="_blank" href="https://testnet-faucet.onflow.org/fund-account" rel="noopener noreferrer"><button style={{marginLeft: '10px'}}>FUND</button></a>
+                  </div>
+                  <div className="infoList" style={{display: 'flex', alignItems:'center'}}>
+                    Flow to claim: {Math.round(flowToClaim * 100) / 100}
                     {flowToClaim > 0?
-                      <button style={{marginLeft: '10px'}} onClick={claimFlow}>CLAIM FLOW</button>
+                      <button style={{marginLeft: '10px'}} onClick={claimFlow}>CLAIM</button>
                       :<span></span>
                     }
                   </div>
                   <div className="infoList" style={{display: 'flex', alignItems:'center'}}>
                     NFTs to claim: {NFTsToClaim}
                     {NFTsToClaim > 0?
-                      <button style={{marginLeft: '10px'}} onClick={claimNFTs}>CLAIM NFTs</button>
+                      <button style={{marginLeft: '10px'}} onClick={claimNFTs}>CLAIM</button>
                       :<span></span>
                     }
                   </div>

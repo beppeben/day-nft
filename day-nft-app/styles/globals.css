@@ -4,7 +4,7 @@
 :root:not([data-theme="dark"]) {
   --primary: #00ee8a;
   --primary-hover: #00ce78;
-  --primary-focus: #FFF;
+  --primary-focus: #00ce78;
   --primary-inverse: #FFF;
 }
 
@@ -14,7 +14,7 @@
   :root:not([data-theme="light"]) {
     --primary: #00ee8a;
     --primary-hover: #00ce78;
-    --primary-focus: --background-color;
+    --primary-focus: #FFF;
     --primary-inverse: #FFF;
   }
 }
@@ -24,7 +24,7 @@
 [data-theme="dark"] {
   --primary: #00ee8a;
   --primary-hover: #00ce78;
-  --primary-focus: --background-color;
+  --primary-focus: #FFF;
   --primary-inverse: #FFF;
 }
 
@@ -144,6 +144,10 @@ p {
 }
 
 .collection-img {
-    width:30%;
-    margin:10px;
+  width:30%;
+  margin:10px;
+}
+
+a {
+  --primary-focus: --background-color;
 }

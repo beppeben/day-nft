@@ -12,9 +12,10 @@ function loadSketch() {
               '-' + (today.getUTCMonth()+1).toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false}) + 
               '-' + today.getUTCFullYear();
 
-  const sketch = document.getElementById('p5sketch');
-  var n_pixels = sketch.offsetWidth; 
-  if (n_pixels == 0) {
+  const panel = document.getElementById('left-panel');
+  var n_pixels = panel.offsetWidth * 0.8; 
+  console.log(n_pixels);
+  if (n_pixels == 0) {   
     n_pixels = 250;
   }
 
