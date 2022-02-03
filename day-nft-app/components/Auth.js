@@ -298,6 +298,10 @@ function App() {
               <input style={{width: '30%', marginBottom:0}} type="number" step=".001" id="flowBid" name="flowBid" placeholder="Flow" onChange={(e) => setFlowBid(e.target.value)}/>
               <button style={{marginLeft: '10px'}} onClick={makeBid}>BID</button>
             </div>
+            {flowBalance <= 0
+                ?<p className="fundAccountMsg">Please fund your account before bidding</p>
+                :<span></span>
+            }
           </div>
           <div id="p5sketch" className="center">
           </div>

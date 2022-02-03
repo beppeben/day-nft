@@ -1,15 +1,19 @@
 import '@picocss/pico'
 import '../styles/globals.css'
 import Link from 'next/link'
+import { ThemeProvider } from 'next-themes'
 
 function MyApp({ Component, pageProps }) {
-  return <div>
+  return(
+  <ThemeProvider defaultTheme="dark">    
+    <div>
     <nav className="container header">
       <ul>
         <li>
           <Link href="/">
             <a><h2>DAY-NFT.IO</h2></a>
           </Link>
+          <span className="testnetTag"><small>Testnet</small></span>
         </li>
       </ul>
       <ul>
@@ -27,9 +31,7 @@ function MyApp({ Component, pageProps }) {
       <nav className="container header center">
         <ul>
           <li>
-            <Link href="https://github.com/beppeben/day-nft">
-              <a>GitHub</a>
-            </Link>
+            <a href="https://github.com/beppeben/day-nft" target="_blank" rel="noopener noreferrer">GitHub</a>
           </li>
           <li>
             <Link href="/about">
@@ -39,7 +41,8 @@ function MyApp({ Component, pageProps }) {
         </ul>
       </nav>
     </footer>
-  </div>
+    </div>
+  </ThemeProvider>)
 }
 
 export default MyApp

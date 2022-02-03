@@ -41,7 +41,7 @@ function App() {
       })
 
       setNFTIds(ids)
-    } catch(e){console.log(e)}
+    } catch(e){}
   }
  
   const WelcomeText = (props) => {

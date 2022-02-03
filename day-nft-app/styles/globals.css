@@ -77,6 +77,8 @@ body {
 
 .container.header {
   margin-bottom: 30px;
+  margin-top: 20px;
+  line-height: 20px;
 }
 
 footer {
@@ -136,7 +138,7 @@ p {
 }
 
 .bestBid{
-  color:#90EE90;
+  color:var(--primary);
 }
 
 .txError{
@@ -150,4 +152,12 @@ p {
 
 a {
   --primary-focus: --background-color;
+}
+
+.fundAccountMsg {
+  color:pink;
+}
+
+.testnetTag {
+  color:pink;
 }
