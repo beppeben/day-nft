@@ -39,7 +39,7 @@ function App() {
         `,
         args: (arg, t) => [arg(address, t.Address)]
       })
-
+      console.log(ids)
       setNFTIds(ids)
     } catch(e){}
   }
@@ -58,7 +58,7 @@ function App() {
         <div>
           <WelcomeText />
           {NFTIds.map((value, index) => {
-            return <a key={index} alt={value} href={"imgs/" + index + ".png"}><img className="collection-img" src={"imgs/" + index + ".png"}/></a>
+            return <a key={index} alt={value} href={"imgs/" + value + ".png"}><img className="collection-img" src={"imgs/" + value + ".png"}/></a>
           })}
           {NFTIds.length == 0 && user?.loggedIn
            ? <p>Collection empty</p> : <span></span>
