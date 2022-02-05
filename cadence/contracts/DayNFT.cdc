@@ -13,27 +13,11 @@ pub contract DayNFT: NonFungibleToken {
     pub let CollectionPublicPath: PublicPath
     pub let AdminPublicPath: PublicPath
 
-    // Total supply of NFTs in existence
+    // Total number of NFTs in circulation
     pub var totalSupply: UInt64
 
-    // NFTs that can be claimed by users that won previous days' auction(s)
-    pub var NFTsDue: @{Address: [NFT]}
-
-    // Amounts of Flow available to be redistributed to each NFT holder
-    pub var amountsDue: {UInt64: UFix64}
-    
-    // Percentage of any amount of Flow deposited to this contract that gets 
-    // redistributed to NFT holders
-    pub let percentageDistributed: UFix64
-
-    // Vault to be used for flow redistribution
-    access(contract) let distributeVault: @FlowToken.Vault
-
-    // Best bid of the day for minting today's NFT
-    access(contract) var bestBid: @Bid
-
-    // NFT minter
-    access(contract) let minter: @NFTMinter
+    // Resource containing data and logic around bids, minting and distribution
+    access(contract) let manager: @ContractManager
 
     // Event emitted when the contract is initialized
     pub event ContractInitialized()
@@ -50,6 +34,263 @@ pub contract DayNFT: NonFungibleToken {
     // Event emitted when a user makes a bid
     pub event BidReceived(user: Address, date: DateUtils.Date, title: String)
 
+    // Resource containing data and logic around bids, minting and distribution
+    pub resource ContractManager {
+        // NFTs that can be claimed by users that won previous days' auction(s)
+        access(self) var NFTsDue: @{Address: [NFT]}
+
+        // Amounts of Flow available to be redistributed to each NFT holder
+        access(self) var amountsDue: {UInt64: UFix64}
+        
+        // Percentage of any amount of Flow deposited to this contract that gets 
+        // redistributed to NFT holders
+        access(self) let percentageDistributed: UFix64
+
+        // Vault to be used for flow redistribution
+        access(self) let distributeVault: @FlowToken.Vault
+
+        // Best bid of the day for minting today's NFT
+        access(self) var bestBid: @Bid
+
+        // NFT minter
+        access(self) let minter: @NFTMinter
+
+        // receiver to deposit tokens to the contract account
+        access(self) let contractAddress: Address
+
+        init(contractAddress: Address) {
+            self.amountsDue = {}
+            self.NFTsDue <- {}
+
+            self.percentageDistributed = 0.5
+            self.distributeVault <- FlowToken.createEmptyVault() as! @FlowToken.Vault  
+            
+            // initialize dummy best bid
+            let vault <- FlowToken.createEmptyVault() as! @FlowToken.Vault        
+            let date = DateUtils.Date(day: 1, month: 1, year: 2020) 
+            self.bestBid <- create Bid(vault: <- vault, 
+                        recipient: Address(0x0),
+                        title: "",
+                        date: date)
+
+            // Create a Minter resource and keep it in the resource (not accessible from the account)
+            self.minter <- create NFTMinter()
+
+            self.contractAddress = contractAddress
+        }
+
+        // Get the best bid for today's auction
+        pub fun getBestBidWithToday(today: DateUtils.Date): PublicBid {
+            if (today.equals(self.bestBid.date)) {
+                return PublicBid(amount: self.bestBid.vault.balance,
+                                    user: self.bestBid.recipient,
+                                    date: today)
+            } else {
+                return PublicBid(amount: 0.0,
+                                    user: Address(0x0),
+                                    date: today)
+            }
+        }
+
+        // Verify if a user has any NFTs to claim after winning one or more auctions
+        pub fun nbNFTsToClaimWithToday(address: Address, today: DateUtils.Date): Int {
+            var res = 0
+            if(self.NFTsDue[address] != nil) {
+                res = self.NFTsDue[address]?.length!
+            }
+            if(!self.bestBid.date.equals(today) && self.bestBid.recipient == address) {
+                res = res + 1
+            }
+            return res
+        }
+
+        // Handle new incoming bid
+        pub fun handleBid(newBid: @Bid, today: DateUtils.Date) {
+            var bid <- newBid
+            if(self.bestBid.date.equals(today) || self.bestBid.vault.balance == 0.0) {
+                if(bid.vault.balance > self.bestBid.vault.balance) {
+                    if(self.bestBid.vault.balance > 0.0) {
+                        // refund current best bid and replace it with the new one
+                        let rec = getAccount(self.bestBid.recipient).getCapability(/public/flowTokenReceiver)
+                                    .borrow<&FlowToken.Vault{FungibleToken.Receiver}>()
+                                    ?? panic("Could not borrow a reference to the receiver")
+                        var tempVault <- FlowToken.createEmptyVault() as! @FlowToken.Vault
+                        tempVault <-> self.bestBid.vault
+                        rec.deposit(from: <- tempVault)
+                    }
+                    bid <-> self.bestBid
+                    destroy bid
+                } else {
+                    // refund the new bid
+                    let rec = getAccount(bid.recipient).getCapability(/public/flowTokenReceiver)
+                                .borrow<&FlowToken.Vault{FungibleToken.Receiver}>()
+                                ?? panic("Could not borrow a reference to the receiver")
+                    var tempVault <- FlowToken.createEmptyVault() as! @FlowToken.Vault
+                    tempVault <-> bid.vault
+                    rec.deposit(from: <- tempVault)
+                    destroy bid
+                }
+            } else {
+                // this is the first bid of the day
+                // assign NFT to best yesterday's bidder and replace today's bestBid with new bid
+                if(self.bestBid.vault.balance > 0.0) {
+                    // deposit flow into contract account for redistribution
+                    var tempVault <- FlowToken.createEmptyVault() as! @FlowToken.Vault
+                    tempVault <-> self.bestBid.vault
+                    self.deposit(vault: <- tempVault)
+
+                    // mint the NFT
+                    self.amountsDue[DayNFT.totalSupply] = 0.0
+                    let newNFT <- self.minter.mintNFT(date: self.bestBid.date, title: self.bestBid.title)
+                    // record into due NFTs
+                    if(self.NFTsDue[self.bestBid.recipient] == nil) {
+                        let newArray <- [<-newNFT]
+                        self.NFTsDue[self.bestBid.recipient] <-! newArray
+                    } else {
+                    var newArray: @[NFT] <- []
+                    var a = 0
+                    var len = self.NFTsDue[self.bestBid.recipient]?.length!
+                    while a < len {
+                        let nft <- self.NFTsDue[self.bestBid.recipient]?.removeFirst()!
+                        newArray.append(<-nft)
+                        a = a + 1
+                    }
+                    newArray.append(<-newNFT)
+                    let old <- self.NFTsDue.remove(key: self.bestBid.recipient)
+                    destroy old
+                    self.NFTsDue[self.bestBid.recipient] <-! newArray
+                    }
+
+                    // replace bid
+                    self.bestBid <-> bid
+                    destroy bid
+                }
+            }
+        }
+
+        // Claim NFTs due to the user, and deposit them into their collection
+        pub fun claimNFTsWithToday(address: Address, today: DateUtils.Date): Int {
+            var res = 0
+            let receiver = getAccount(address)
+                .getCapability(DayNFT.CollectionPublicPath)
+                .borrow<&{DayNFT.CollectionPublic}>()
+                ?? panic("Could not get receiver reference to the NFT Collection")
+
+            if(self.NFTsDue[address] != nil) {
+                var a = 0
+                let len = self.NFTsDue[address]?.length!
+                while a < len {
+                    let nft <- self.NFTsDue[self.bestBid.recipient]?.removeFirst()!
+                    receiver.deposit(token: <-nft)
+                    a = a + 1
+                }
+                res = len
+            }
+            if(!self.bestBid.date.equals(today) && self.bestBid.recipient == address) {
+                // deposit flow to contract account
+                var tempVault <- FlowToken.createEmptyVault() as! @FlowToken.Vault
+                tempVault <-> self.bestBid.vault
+                self.deposit(vault: <- tempVault)
+
+                // mint the NFT and send it
+                self.amountsDue[DayNFT.totalSupply] = 0.0
+                let newNFT <- self.minter.mintNFT(date: self.bestBid.date, title: self.bestBid.title)
+                receiver.deposit(token: <-newNFT)
+                
+                // replace old best bid with a default one for today
+                let vault <- FlowToken.createEmptyVault() as! @FlowToken.Vault 
+                var bid <- create Bid(vault: <- vault, 
+                    recipient: Address(0x0),
+                    title: "",
+                    date: today)
+                self.bestBid <-> bid
+                destroy bid
+                res = res + 1
+            }
+            return res
+        }
+
+        // Get amount of Flow due to the user
+        pub fun tokensToClaim(address: Address): UFix64 {
+            // borrow the recipient's public NFT collection reference
+            let holder = getAccount(address)
+                        .getCapability(DayNFT.CollectionPublicPath)
+                        .borrow<&DayNFT.Collection{DayNFT.CollectionPublic}>()
+                        ?? panic("Could not get receiver reference to the NFT Collection")
+
+            // compute amount due based on number of NFTs detained
+            var amountDue = 0.0
+            for id in holder.getIDs() {
+                amountDue = amountDue + self.amountsDue[id]!
+            }
+            return amountDue
+        }
+
+        // Claim Flow due to the user
+        pub fun claimTokens(address: Address): UFix64 {
+            // borrow the recipient's public NFT collection reference
+            let holder = getAccount(address)
+                        .getCapability(DayNFT.CollectionPublicPath)
+                        .borrow<&DayNFT.Collection{DayNFT.CollectionPublic}>()
+                        ?? panic("Could not get receiver reference to the NFT Collection")
+
+            // borrow the recipient's flow token receiver
+            let receiver = getAccount(address).getCapability(/public/flowTokenReceiver)
+                            .borrow<&FlowToken.Vault{FungibleToken.Receiver}>()
+                            ?? panic("Could not borrow a reference to the receiver")
+
+            // compute amount due based on number of NFTs detained
+            var amountDue = 0.0
+            for id in holder.getIDs() {
+                amountDue = amountDue + self.amountsDue[id]!
+                self.amountsDue[id] = 0.0
+            }
+
+            // pay amount
+            let vault <- self.distributeVault.withdraw(amount: amountDue)
+            receiver.deposit(from: <- vault)
+
+            return amountDue
+        }
+
+        pub fun max(_ a: UFix64, _ b: UFix64): UFix64 {
+            var res = a
+            if (b > a){
+                res = b
+            }
+            return res
+        }
+
+        // Deposit Flow into the contract, to be redistributed among NFT holders
+        pub fun deposit(vault: @FungibleToken.Vault) {
+            let amount = vault.balance
+            var distribute = amount * self.percentageDistributed
+            if (DayNFT.totalSupply == 0) {
+                distribute = 0.0
+            }
+            let distrVault <- vault.withdraw(amount: distribute)
+            self.distributeVault.deposit(from: <- distrVault)
+            let rec = getAccount(self.contractAddress).getCapability(/public/flowTokenReceiver) 
+                        .borrow<&FlowToken.Vault{FungibleToken.Receiver}>()
+                        ?? panic("Could not borrow a reference to the Flow receiver")
+            rec.deposit(from: <- vault)
+
+            // assign part of the value to the current holders
+            let id = DayNFT.totalSupply
+            let distributeEach = distribute / self.max(UFix64(id), 1.0)
+            var a = 0 as UInt64
+            while a < id {
+                self.amountsDue[a] = self.amountsDue[a]! + distributeEach
+                a = a + 1
+            }
+        }
+
+        destroy() {
+            destroy self.NFTsDue
+            destroy self.bestBid
+            destroy self.minter
+        }
+    }
 
     // Standard NFT resource
     pub resource NFT: NonFungibleToken.INFT {
@@ -188,7 +429,6 @@ pub contract DayNFT: NonFungibleToken {
             var newNFT <- create NFT(initID: id, date: date, title: title)
 
             DayNFT.totalSupply = DayNFT.totalSupply + 1
-            DayNFT.amountsDue[id] = 0.0
 
             return <-newNFT
         }
@@ -258,64 +498,8 @@ pub contract DayNFT: NonFungibleToken {
                       title: title,
                       date: date)
         
-        if(self.bestBid.date.equals(today) || self.bestBid.vault.balance == 0.0) {
-            if(bid.vault.balance > self.bestBid.vault.balance) {
-                if(self.bestBid.vault.balance > 0.0) {
-                    // refund current best bid and replace it with the new one
-                    let rec = getAccount(self.bestBid.recipient).getCapability(/public/flowTokenReceiver)
-                                .borrow<&FlowToken.Vault{FungibleToken.Receiver}>()
-                                ?? panic("Could not borrow a reference to the receiver")
-                    var tempVault <- FlowToken.createEmptyVault() as! @FlowToken.Vault
-                    tempVault <-> self.bestBid.vault
-                    rec.deposit(from: <- tempVault)
-                }
-                bid <-> self.bestBid
-                destroy bid
-            } else {
-                // refund the new bid
-                let rec = getAccount(bid.recipient).getCapability(/public/flowTokenReceiver)
-                            .borrow<&FlowToken.Vault{FungibleToken.Receiver}>()
-                            ?? panic("Could not borrow a reference to the receiver")
-                var tempVault <- FlowToken.createEmptyVault() as! @FlowToken.Vault
-                tempVault <-> bid.vault
-                rec.deposit(from: <- tempVault)
-                destroy bid
-            }
-        } else {
-            // this is the first bid of the day
-            // assign NFT to best bid and replace it with new bid
-            if(self.bestBid.vault.balance > 0.0) {
-                // deposit flow to contract account
-                var tempVault <- FlowToken.createEmptyVault() as! @FlowToken.Vault
-                tempVault <-> self.bestBid.vault
-                self.deposit(vault: <- tempVault)
-
-                // mint the NFT
-                let newNFT <- self.minter.mintNFT(date: self.bestBid.date, title: self.bestBid.title)
-                // record into due NFTs
-                if(self.NFTsDue[self.bestBid.recipient] == nil) {
-                    let newArray <- [<-newNFT]
-                    self.NFTsDue[self.bestBid.recipient] <-! newArray
-                } else {
-                  var newArray: @[NFT] <- []
-                  var a = 0
-                  var len = self.NFTsDue[self.bestBid.recipient]?.length!
-                  while a < len {
-                      let nft <- self.NFTsDue[self.bestBid.recipient]?.removeFirst()!
-                      newArray.append(<-nft)
-                      a = a + 1
-                  }
-                  newArray.append(<-newNFT)
-                  let old <- self.NFTsDue.remove(key: self.bestBid.recipient)
-                  destroy old
-                  self.NFTsDue[self.bestBid.recipient] <-! newArray
-                }
-
-                // replace bid
-                self.bestBid <-> bid
-                destroy bid
-            }
-        }
+        self.manager.handleBid(newBid: <-bid, today: today)
+        
         emit BidReceived(user: recipient, date: date, title: title)
     }
 
@@ -340,15 +524,7 @@ pub contract DayNFT: NonFungibleToken {
     }
     // ONLY FOR TESTING, THIS MUST BE PRIVATE WHEN DEPLOYED
     pub fun getBestBidWithToday(today: DateUtils.Date): PublicBid {
-        if (today.equals(self.bestBid.date)) {
-            return PublicBid(amount: self.bestBid.vault.balance,
-                                user: self.bestBid.recipient,
-                                date: today)
-        } else {
-            return PublicBid(amount: 0.0,
-                                user: Address(0x0),
-                                date: today)
-        }
+        return self.manager.getBestBidWithToday(today: today)
     }
 
     // Verify if a user has any NFTs to claim after winning one or more auctions
@@ -358,14 +534,7 @@ pub contract DayNFT: NonFungibleToken {
     }
     // ONLY FOR TESTING, THIS MUST BE PRIVATE WHEN DEPLOYED
     pub fun nbNFTsToClaimWithToday(address: Address, today: DateUtils.Date): Int {
-        var res = 0
-        if(self.NFTsDue[address] != nil) {
-            res = self.NFTsDue[address]?.length!
-        }
-        if(!self.bestBid.date.equals(today) && self.bestBid.recipient == address) {
-            res = res + 1
-        }
-        return res
+        return self.manager.nbNFTsToClaimWithToday(address: address, today: today)
     }
 
     // Claim NFTs due to the user, and deposit them into their collection
@@ -375,132 +544,27 @@ pub contract DayNFT: NonFungibleToken {
     }
     // ONLY FOR TESTING, THIS MUST BE PRIVATE WHEN DEPLOYED
     pub fun claimNFTsWithToday(address: Address, today: DateUtils.Date): Int {
-        var res = 0
-        let receiver = getAccount(address)
-          .getCapability(self.CollectionPublicPath)
-          .borrow<&{DayNFT.CollectionPublic}>()
-          ?? panic("Could not get receiver reference to the NFT Collection")
-
-        if(self.NFTsDue[address] != nil) {
-            var a = 0
-            let len = self.NFTsDue[address]?.length!
-            while a < len {
-                let nft <- self.NFTsDue[self.bestBid.recipient]?.removeFirst()!
-                receiver.deposit(token: <-nft)
-                a = a + 1
-            }
-            res = len
-        }
-        if(!self.bestBid.date.equals(today) && self.bestBid.recipient == address) {
-            // deposit flow to contract account
-            var tempVault <- FlowToken.createEmptyVault() as! @FlowToken.Vault
-            tempVault <-> self.bestBid.vault
-            self.deposit(vault: <- tempVault)
-
-            // mint the NFT and send it
-            let newNFT <- self.minter.mintNFT(date: self.bestBid.date, title: self.bestBid.title)
-            receiver.deposit(token: <-newNFT)
-            
-            // replace old best bid with a default one for today
-            let vault <- FlowToken.createEmptyVault() as! @FlowToken.Vault 
-            var bid <- create Bid(vault: <- vault, 
-                  recipient: Address(0x0),
-                  title: "",
-                  date: today)
-            self.bestBid <-> bid
-            destroy bid
-            res = res + 1
-        }
-        return res
+        return self.manager.claimNFTsWithToday(address: address, today: today)
     }
 
     // Get amount of Flow due to the user
     pub fun tokensToClaim(address: Address): UFix64 {
-        // borrow the recipient's public NFT collection reference
-        let holder = getAccount(address)
-                      .getCapability(self.CollectionPublicPath)
-                      .borrow<&DayNFT.Collection{DayNFT.CollectionPublic}>()
-                      ?? panic("Could not get receiver reference to the NFT Collection")
-
-        // compute amount due based on number of NFTs detained
-        var amountDue = 0.0
-        for id in holder.getIDs() {
-            amountDue = amountDue + self.amountsDue[id]!
-        }
-        return amountDue
+        return self.manager.tokensToClaim(address: address)
     }
 
     // Claim Flow due to the user
     pub fun claimTokens(address: Address): UFix64 {
-        // borrow the recipient's public NFT collection reference
-        let holder = getAccount(address)
-                      .getCapability(self.CollectionPublicPath)
-                      .borrow<&DayNFT.Collection{DayNFT.CollectionPublic}>()
-                      ?? panic("Could not get receiver reference to the NFT Collection")
-
-        // borrow the recipient's flow token receiver
-        let receiver = getAccount(address).getCapability(/public/flowTokenReceiver)
-                        .borrow<&FlowToken.Vault{FungibleToken.Receiver}>()
-                        ?? panic("Could not borrow a reference to the receiver")
-
-        // compute amount due based on number of NFTs detained
-        var amountDue = 0.0
-        for id in holder.getIDs() {
-            amountDue = amountDue + self.amountsDue[id]!
-            self.amountsDue[id] = 0.0
-        }
-
-        // pay amount
-        //let mainVault = self.account.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault)
-        //            ?? panic("Could not borrow a reference to the flow vault")
-        let vault <- self.distributeVault.withdraw(amount: amountDue)
-        receiver.deposit(from: <- vault)
-
-        return amountDue
-    }
-
-    pub fun max(_ a: UFix64, _ b: UFix64): UFix64 {
-        var res = a
-        if (b > a){
-            res = b
-        }
-        return res
-    }
-    
-    // Deposit Flow into the contract, to be redistributed among NFT holders
-    pub fun deposit(vault: @FungibleToken.Vault) {
-        // deposit flow to contract account
-        let rec = self.account.getCapability(/public/flowTokenReceiver)
-                    .borrow<&FlowToken.Vault{FungibleToken.Receiver}>()
-                    ?? panic("Could not borrow a reference to the receiver")
-        let amount = vault.balance
-        var distribute = amount * self.percentageDistributed
-        if (self.totalSupply == 0) {
-            distribute = 0.0
-        }
-        let distrVault <- vault.withdraw(amount: distribute)
-        self.distributeVault.deposit(from: <- distrVault)
-        rec.deposit(from: <- vault)
-
-        // assign part of the value to the current holders
-        let id = self.totalSupply
-        let distributeEach = distribute / self.max(UFix64(id), 1.0)
-        var a = 0 as UInt64
-        while a < id {
-            self.amountsDue[a] = self.amountsDue[a]! + distributeEach
-            a = a + 1
-        }
+        return self.manager.claimTokens(address: address)
     }
 
     // Resource to receive Flow tokens to be distributed
     pub resource Admin: FungibleToken.Receiver {
         pub fun deposit(from: @FungibleToken.Vault) {
-            DayNFT.deposit(vault: <-from)
+            DayNFT.manager.deposit(vault: <-from)
         }
     }
 
     init() {
-
         // Set named paths
         //FIXME: REMOVE SUFFIX BEFORE RELEASE
         self.CollectionStoragePath = /storage/DayNFTCollection007
@@ -511,29 +575,13 @@ pub contract DayNFT: NonFungibleToken {
         let admin <- create Admin()
         self.account.save(<-admin, to: adminStoragePath)
         // Create a public capability allowing external users (like marketplaces)
-        // to deposit flow to the contract
+        // to deposit flow to the contract so that it can be redistributed
         self.account.link<&DayNFT.Admin{FungibleToken.Receiver}>(
             self.AdminPublicPath,
             target: adminStoragePath
         )
-
         self.totalSupply = 0
-        self.amountsDue = {}
-        self.NFTsDue <- {}
-
-        self.percentageDistributed = 0.5
-        self.distributeVault <- FlowToken.createEmptyVault() as! @FlowToken.Vault  
-        
-        // initialize dummy best bid
-        let vault <- FlowToken.createEmptyVault() as! @FlowToken.Vault        
-        let date = DateUtils.Date(day: 1, month: 1, year: 2020) 
-        self.bestBid <- create Bid(vault: <- vault, 
-                      recipient: Address(0x0),
-                      title: "",
-                      date: date)
-
-        // Create a Minter resource and keep it in the contract
-        self.minter <- create NFTMinter()
+        self.manager <- create ContractManager(contractAddress: self.account.address)
 
         emit ContractInitialized()
     }
