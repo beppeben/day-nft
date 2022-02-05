@@ -2,6 +2,7 @@
 
 import NonFungibleToken from "./NonFungibleToken.cdc"
 import MetadataViews from "./MetadataViews.cdc"
+import DateUtils from "./DateUtils.cdc"
 import FungibleToken from 0x9a0766d93b6608b7
 import FlowToken from 0x7e60df042a9c0868
 
@@ -47,7 +48,7 @@ pub contract DayNFT: NonFungibleToken {
     pub event Minted(id: UInt64, date: String, title: String)
 
     // Event emitted when a user makes a bid
-    pub event BidReceived(user: Address, date: Date, title: String)
+    pub event BidReceived(user: Address, date: DateUtils.Date, title: String)
 
 
     // Standard NFT resource
@@ -58,10 +59,10 @@ pub contract DayNFT: NonFungibleToken {
         pub let thumbnail: String
 
         pub let title: String
-        pub let date: Date
+        pub let date: DateUtils.Date
         pub let dateStr: String
 
-        init(initID: UInt64, date: Date, title: String) {
+        init(initID: UInt64, date: DateUtils.Date, title: String) {
             self.dateStr = date.toString()
 
             self.id = initID
@@ -180,7 +181,7 @@ pub contract DayNFT: NonFungibleToken {
 
         // mintNFT mints a new NFT with a new ID
         // and deposit it in the recipients collection using their collection reference
-        pub fun mintNFT(date: Date, title: String) : @NFT {
+        pub fun mintNFT(date: DateUtils.Date, title: String) : @NFT {
 
             // create a new NFT
             let id = DayNFT.totalSupply
@@ -193,87 +194,17 @@ pub contract DayNFT: NonFungibleToken {
         }
     }
 
-    // A simple Date object
-    pub struct Date {
-        pub let day: Int
-        pub let month: Int
-        pub let year: Int
-
-        init(day: Int, month: Int, year: Int) {
-            self.day = day
-            self.month = month
-            self.year = year
-        }
-
-        pub fun toTwoDigitString(_ num: Int): String {
-            let raw = ("0".concat(num.toString()))
-            let formattedNumber = raw.slice(from: raw.length - 2, upTo: raw.length)
-            return formattedNumber
-        }
-
-        pub fun toString(): String {
-            return self.toTwoDigitString(self.day).concat("-").concat(self.toTwoDigitString(self.month)
-                    .concat("-").concat(self.year.toString()))
-        }
-
-        pub fun equals(_ other: Date): Bool {
-            return self.day == other.day && self.month == other.month && self.year == other.year
-        }
-    }
-
-    // Function to get today's date from the block's timestamp
-    pub fun getDate(): Date {
-        let timestamp = UInt64(getCurrentBlock().timestamp)
-        return self.getDateFromTimestamp(timestamp)
-    }
-
-    // Function to get a date a timestamp
-    pub fun getDateFromTimestamp(_ timestamp: UInt64): Date {
-        let SECONDS_PER_DAY = 86400 as UInt64
-        let INITIAL_TIMESTAMP = 1609459200 as UInt64
-        let EPOCH_MONTH = 1
-        let EPOCH_YEAR = 2021
-        var days = Int((timestamp - INITIAL_TIMESTAMP) / SECONDS_PER_DAY)
-
-        var year = EPOCH_YEAR;
-        while (days >= self.daysForYear(year)) {
-            days = days - self.daysForYear(year)
-            year = year + 1
-        }
-
-        let daysPerMonth = self.daysPerMonth(year)
-        var month = EPOCH_MONTH
-        while (days >= daysPerMonth[month]) {
-            days = days - daysPerMonth[month]
-            month = month + 1
-        }
-
-        let day = days + 1
-        return Date(day: day, month: month, year: year)
-    }
-
-    // Auxiliary functions needed to get dates out of timestamps
-    access(contract) fun isLeapYear(_ year: Int): Bool {
-        return year % 400 == 0 || (year % 4 == 0 && year % 100 != 0)
-    }
-    access(contract) fun daysForYear(_ year: Int) : Int {
-        return self.isLeapYear(year) ? 366 : 365;
-    }
-    access(contract) fun daysPerMonth(_ year: Int) : [Int] {
-        return [0, 31, self.isLeapYear(year) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-    }
-
     // Resource containing a user's bid in the auction for today's NFT
     pub resource Bid {
         pub(set) var vault: @FlowToken.Vault
         pub let recipient: Address
         pub let title: String
-        pub let date: Date
+        pub let date: DateUtils.Date
 
         init(vault: @FlowToken.Vault, 
               recipient: Address,
               title: String,
-              date: Date) {
+              date: DateUtils.Date) {
             self.vault <- vault
             self.recipient = recipient
             self.title = title
@@ -296,9 +227,9 @@ pub contract DayNFT: NonFungibleToken {
     pub fun makeBid(vault: @FlowToken.Vault, 
                     recipient: Address,
                     title: String,
-                    date: Date) {
+                    date: DateUtils.Date) {
         
-        let today = self.getDate()
+        let today = DateUtils.getDate()
         self.makeBidWithToday(vault: <-vault, 
                               recipient: recipient,
                               title: title,
@@ -309,8 +240,8 @@ pub contract DayNFT: NonFungibleToken {
     pub fun makeBidWithToday(vault: @FlowToken.Vault, 
                               recipient: Address,
                               title: String,
-                              date: Date,
-                              today: Date) {
+                              date: DateUtils.Date,
+                              today: DateUtils.Date) {
                       
         if (!date.equals(today)) {
           panic("You can only bid on today's NFT")
@@ -391,11 +322,11 @@ pub contract DayNFT: NonFungibleToken {
     pub struct PublicBid {
         pub let amount: UFix64
         pub let user: Address
-        pub let date: Date
+        pub let date: DateUtils.Date
 
         init(amount: UFix64, 
               user: Address,
-              date: Date) {
+              date: DateUtils.Date) {
             self.amount = amount
             self.user = user
             self.date = date
@@ -404,11 +335,11 @@ pub contract DayNFT: NonFungibleToken {
 
     // Get the best bid for today's auction
     pub fun getBestBid(): PublicBid {
-        var today = self.getDate()
+        var today = DateUtils.getDate()
         return self.getBestBidWithToday(today: today)
     }
     // ONLY FOR TESTING, THIS MUST BE PRIVATE WHEN DEPLOYED
-    pub fun getBestBidWithToday(today: Date): PublicBid {
+    pub fun getBestBidWithToday(today: DateUtils.Date): PublicBid {
         if (today.equals(self.bestBid.date)) {
             return PublicBid(amount: self.bestBid.vault.balance,
                                 user: self.bestBid.recipient,
@@ -422,11 +353,11 @@ pub contract DayNFT: NonFungibleToken {
 
     // Verify if a user has any NFTs to claim after winning one or more auctions
     pub fun nbNFTsToClaim(address: Address): Int {
-        let today = self.getDate()
+        let today = DateUtils.getDate()
         return self.nbNFTsToClaimWithToday(address: address, today: today)
     }
     // ONLY FOR TESTING, THIS MUST BE PRIVATE WHEN DEPLOYED
-    pub fun nbNFTsToClaimWithToday(address: Address, today: Date): Int {
+    pub fun nbNFTsToClaimWithToday(address: Address, today: DateUtils.Date): Int {
         var res = 0
         if(self.NFTsDue[address] != nil) {
             res = self.NFTsDue[address]?.length!
@@ -439,11 +370,11 @@ pub contract DayNFT: NonFungibleToken {
 
     // Claim NFTs due to the user, and deposit them into their collection
     pub fun claimNFTs(address: Address): Int {
-        var today = self.getDate()
+        var today = DateUtils.getDate()
         return self.claimNFTsWithToday(address: address, today: today)
     }
     // ONLY FOR TESTING, THIS MUST BE PRIVATE WHEN DEPLOYED
-    pub fun claimNFTsWithToday(address: Address, today: Date): Int {
+    pub fun claimNFTsWithToday(address: Address, today: DateUtils.Date): Int {
         var res = 0
         let receiver = getAccount(address)
           .getCapability(self.CollectionPublicPath)
@@ -452,13 +383,13 @@ pub contract DayNFT: NonFungibleToken {
 
         if(self.NFTsDue[address] != nil) {
             var a = 0
-            var len = self.NFTsDue[address]?.length!
+            let len = self.NFTsDue[address]?.length!
             while a < len {
                 let nft <- self.NFTsDue[self.bestBid.recipient]?.removeFirst()!
                 receiver.deposit(token: <-nft)
                 a = a + 1
             }
-            res = self.NFTsDue[address]?.length!
+            res = len
         }
         if(!self.bestBid.date.equals(today) && self.bestBid.recipient == address) {
             // deposit flow to contract account
@@ -595,7 +526,7 @@ pub contract DayNFT: NonFungibleToken {
         
         // initialize dummy best bid
         let vault <- FlowToken.createEmptyVault() as! @FlowToken.Vault        
-        let date = Date(day: 1, month: 1, year: 2020) 
+        let date = DateUtils.Date(day: 1, month: 1, year: 2020) 
         self.bestBid <- create Bid(vault: <- vault, 
                       recipient: Address(0x0),
                       title: "",

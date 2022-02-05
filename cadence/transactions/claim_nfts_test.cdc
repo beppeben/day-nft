@@ -1,6 +1,7 @@
 import NonFungibleToken from 0xNONFUNGIBLETOKEN
 import DayNFT from 0xDAYNFTCONTRACTADDRESS
 import FlowToken from 0xFLOWTOKEN
+import DateUtils from 0xDATEUTILSCONTRACTADDRESS
 
 transaction(today_arr: [Int]) {
 
@@ -23,7 +24,7 @@ transaction(today_arr: [Int]) {
     }
 
     execute { 
-        let today = DayNFT.Date(day: today_arr[0], month: today_arr[1], year: today_arr[2])
+        let today = DateUtils.Date(day: today_arr[0], month: today_arr[1], year: today_arr[2])
         DayNFT.claimNFTsWithToday(address: self.address, today: today)
     }
 }

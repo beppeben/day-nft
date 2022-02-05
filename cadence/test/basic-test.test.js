@@ -7,9 +7,11 @@ jest.setTimeout(10000);
 async function deployAll() {
   var [deploymentResult, error] = await deployContractByName({name: "NonFungibleToken"});
   var [deploymentResult, error] = await deployContractByName({name: "MetadataViews"});
+  var [deploymentResult, error] = await deployContractByName({name: "DateUtils"});
   const NonFungibleToken = await getContractAddress("NonFungibleToken");
   const MetadataViews = await getContractAddress("MetadataViews");
-  [deploymentResult, error] = await deployContractByName({name: "DayNFT", addressMap: {NonFungibleToken, MetadataViews}});
+  const DateUtils = await getContractAddress("DateUtils");
+  [deploymentResult, error] = await deployContractByName({name: "DayNFT", addressMap: {NonFungibleToken, MetadataViews, DateUtils}});
 }
 
 describe("basic-test", ()=>{
@@ -44,7 +46,7 @@ describe("basic-test", ()=>{
   })
 
   test("dates", async () => {    
-    await deployAll();
+    var [deploymentResult, error] = await deployContractByName({name: "DateUtils"});
 
     // check that the contract can successfully convert timestamps to days
     const timestamp1 = Date.parse('04 Dec 2185 23:59:59 GMT')/1000
@@ -231,7 +233,7 @@ describe("basic-test", ()=>{
 
     // read alice's NFT ids
     var [result,error] = await executeScript("read_collection_ids", [alice]);
-    expect(result).toEqual([1, 2]);
+    expect(new Set(result)).toEqual(new Set([1, 2]));
 
     // alice should get a cut of her latest NFT because she already held one (2 * 50% / 2)
     var [result,error] = await executeScript("read_tokens_to_claim", [alice]);
