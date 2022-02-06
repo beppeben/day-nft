@@ -115,6 +115,7 @@ function App() {
     const transactionId = await fcl.mutate({
       cadence: `
         import DayNFT from 0xDayNFT
+        import DateUtils from 0xDateUtils
         import FlowToken from 0xFlowToken
 
         transaction(bidAmount: UFix64, title: String, date_arr: [Int]) {
@@ -130,7 +131,7 @@ function App() {
             }
 
             execute { 
-                let date = DayNFT.Date(day: date_arr[0], month: date_arr[1], year: date_arr[2])
+                let date = DateUtils.Date(day: date_arr[0], month: date_arr[1], year: date_arr[2])
                 DayNFT.makeBid(vault: <-self.vault, 
                                 recipient: self.address,
                                 title: title,
