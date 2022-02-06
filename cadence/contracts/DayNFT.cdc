@@ -567,10 +567,10 @@ pub contract DayNFT: NonFungibleToken {
     init() {
         // Set named paths
         //FIXME: REMOVE SUFFIX BEFORE RELEASE
-        self.CollectionStoragePath = /storage/DayNFTCollection007
-        self.CollectionPublicPath = /public/DayNFTCollection007
-        self.AdminPublicPath = /public/DayNFTAdmin007
-        let adminStoragePath = /storage/DayNFTAdmin007
+        self.CollectionStoragePath = /storage/DayNFTCollection008
+        self.CollectionPublicPath = /public/DayNFTCollection008
+        self.AdminPublicPath = /public/DayNFTAdmin008
+        let adminStoragePath = /storage/DayNFTAdmin008
 
         let admin <- create Admin()
         self.account.save(<-admin, to: adminStoragePath)
