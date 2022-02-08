@@ -10,11 +10,11 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@babel/core": "^7.16.7",
-    "@babel/preset-env": "^7.16.7",
-    "babel-jest": "^27.4.6",
-    "flow-js-testing": "^0.2.1",
-    "jest": "^27.4.7",
+    "@babel/core": "^7.17.2",
+    "@babel/preset-env": "^7.16.11",
+    "babel-jest": "^27.5.1",
+    "flow-js-testing": "^0.2.2",
+    "jest": "^27.5.1",
     "jest-environment-node": "^27.4.6"
   }
 }

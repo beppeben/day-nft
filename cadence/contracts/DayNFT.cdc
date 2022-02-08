@@ -119,7 +119,6 @@ pub contract DayNFT: NonFungibleToken {
                         rec.deposit(from: <- tempVault)
                     }
                     bid <-> self.bestBid
-                    destroy bid
                 } else {
                     // refund the new bid
                     let rec = getAccount(bid.recipient).getCapability(/public/flowTokenReceiver)
@@ -128,7 +127,6 @@ pub contract DayNFT: NonFungibleToken {
                     var tempVault <- FlowToken.createEmptyVault() as! @FlowToken.Vault
                     tempVault <-> bid.vault
                     rec.deposit(from: <- tempVault)
-                    destroy bid
                 }
             } else {
                 // this is the first bid of the day
@@ -163,9 +161,9 @@ pub contract DayNFT: NonFungibleToken {
 
                     // replace bid
                     self.bestBid <-> bid
-                    destroy bid
                 }
             }
+            destroy bid
         }
 
         // Claim NFTs due to the user, and deposit them into their collection
@@ -289,6 +287,7 @@ pub contract DayNFT: NonFungibleToken {
             destroy self.NFTsDue
             destroy self.bestBid
             destroy self.minter
+            destroy self.distributeVault
         }
     }
 
