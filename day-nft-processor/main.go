@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"math/rand"
 	"os/exec"
-	"sync"
+
+	//"sync"
 	"time"
 
 	"github.com/onflow/flow-go-sdk/client"
@@ -82,38 +83,37 @@ func queryAndProcessEvents(config Config, lastBlock uint64) uint64 {
 		return 0
 	}
 
-	customType := fmt.Sprintf("A.%s.DayNFT.Minted", config.Address)
 	end := block.Height
-	retries := 5
+
 	actualDepth := min(int((block.Height-lastBlock)/249+1), config.MaxDepth)
 	fmt.Printf("[INFO]: Starting update with depth %d", actualDepth)
 	fmt.Println()
-	var wg sync.WaitGroup
 	for i := 1; i <= actualDepth; i++ {
-		wg.Add(1)
 		start := end - 249
-		go func(wg *sync.WaitGroup, start uint64, end uint64) {
-			defer wg.Done()
-			for j := 1; j <= retries; j++ {
-				time.Sleep(time.Duration(rand.Intn(500)) * time.Millisecond)
-				result, err := flowClient.GetEventsForHeightRange(ctx, client.EventRangeQuery{
-					Type:        customType,
-					StartHeight: start,
-					EndHeight:   end,
-				})
-				if err == nil {
-					processEvents(config, result)
-					break
-				} else if j == retries {
-					fmt.Println("[ERROR]: " + err.Error())
-				}
-			}
-		}(&wg, start, end)
+		sendQuery(config, flowClient, ctx, start, end)
 		end = start
 	}
-	wg.Wait()
 	fmt.Println("[INFO]: Update done")
 	return block.Height
+}
+
+func sendQuery(config Config, flowClient *client.Client, ctx context.Context, start uint64, end uint64) {
+	customType := fmt.Sprintf("A.%s.DayNFT.Minted", config.Address)
+	retries := 5
+	for j := 1; j <= retries; j++ {
+		time.Sleep(time.Duration(rand.Intn(500)) * time.Millisecond)
+		result, err := flowClient.GetEventsForHeightRange(ctx, client.EventRangeQuery{
+			Type:        customType,
+			StartHeight: start,
+			EndHeight:   end,
+		})
+		if err == nil {
+			processEvents(config, result)
+			break
+		} else if j == retries {
+			fmt.Println("[ERROR]: " + err.Error())
+		}
+	}
 }
 
 func processEvents(config Config, result []client.BlockEvents) {

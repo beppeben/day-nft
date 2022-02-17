@@ -13,7 +13,6 @@ function MyApp({ Component, pageProps }) {
           <Link href="/">
             <a><h2>DAY-NFT.IO</h2></a>
           </Link>
-          <span className="testnetTag"><small>Testnet</small></span>
         </li>
       </ul>
       <ul>

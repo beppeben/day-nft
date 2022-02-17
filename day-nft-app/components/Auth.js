@@ -315,7 +315,6 @@ function App() {
                   <div className="infoList">Address: {user.addr}</div>
                   <div className="infoList" style={{display: 'flex', alignItems:'center'}}>
                     Flow balance: {flowBalance ?? "ND"}
-                    <a target="_blank" href="https://testnet-faucet.onflow.org/fund-account" rel="noopener noreferrer"><button style={{marginLeft: '10px'}}>FUND</button></a>
                   </div>
                   <div className="infoList" style={{display: 'flex', alignItems:'center'}}>
                     Flow to claim: {Math.round(flowToClaim * 100) / 100}
