@@ -17,7 +17,8 @@ export default function About() {
         <ul>
           <li>Only one Day-NFT is minted every day to the highest bidder.</li>
           <li>It comes with a unique artwork which depends on the posted message.</li>        
-          <li>50% of all earnings from mints and transfer fees are redistributed back to NFT holders.</li>
+          <li>50% of all earnings from mints and royalties are redistributed back to NFT holders, who become actual shareholders of the project.</li>
+          <li>Come and showcase your Day-NFT on <a href="https://discord.gg/BekCzTvA" target="_blank" rel="noopener noreferrer">Discord</a>!</li>
           <li>Marketplace will come soon.</li>
         </ul>
         </div>

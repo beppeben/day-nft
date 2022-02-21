@@ -30,10 +30,10 @@ function MyApp({ Component, pageProps }) {
       <nav className="container header center">
         <ul>
           <li>
-            <a href="https://github.com/beppeben/day-nft-contracts" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="https://flow-view-source.com/mainnet/account/0x1600b04bf033fb99/contract/DayNFT" target="_blank" rel="noopener noreferrer">Contract</a>
           </li>
           <li>
-            <a href="https://discord.gg/dET3YqabTt" target="_blank" rel="noopener noreferrer">Discord</a>
+            <a href="https://discord.gg/BekCzTvA" target="_blank" rel="noopener noreferrer">Discord</a>
           </li>
           <li>
             <Link href="/about">

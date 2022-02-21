@@ -260,7 +260,8 @@ function App() {
         <ul>
           <li>Only one Day-NFT is minted every day to the highest bidder.</li>
           <li>It comes with a unique artwork which depends on the posted message.</li>        
-          <li>50% of all earnings from mints and royalties are redistributed back to NFT holders.</li>
+          <li>50% of all earnings from mints and royalties are redistributed back to NFT holders, who become actual shareholders of the project.</li>
+          <li>Come and showcase your Day-NFT on <a href="https://discord.gg/BekCzTvA" target="_blank" rel="noopener noreferrer">Discord</a>!</li>
           <li>Marketplace will come soon.</li>
         </ul>
         </div>
@@ -300,7 +301,7 @@ function App() {
               <button style={{marginLeft: '10px'}} onClick={makeBid}>BID</button>
             </div>
             {flowBalance <= 0
-                ?<p className="fundAccountMsg">Please fund your account before bidding</p>
+                ?<p className="fundAccountMsg">Please <a href="https://blocto.portto.io/" target="_blank" rel="noopener noreferrer">fund</a> your account before bidding</p>
                 :<span></span>
             }
           </div>
