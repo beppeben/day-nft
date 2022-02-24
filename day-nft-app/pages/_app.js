@@ -33,7 +33,7 @@ function MyApp({ Component, pageProps }) {
             <a href="https://flow-view-source.com/mainnet/account/0x1600b04bf033fb99/contract/DayNFT" target="_blank" rel="noopener noreferrer">Contract</a>
           </li>
           <li>
-            <a href="https://discord.gg/BekCzTvA" target="_blank" rel="noopener noreferrer">Discord</a>
+            <a href="https://discord.gg/cSjwSSxwXf" target="_blank" rel="noopener noreferrer">Discord</a>
           </li>
           <li>
             <Link href="/about">
