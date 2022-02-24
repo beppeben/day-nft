@@ -20,6 +20,7 @@ var sketchWithParams = function(date, message, n_pixels, font_path, out_path) {
     }
   }
 
+  message = message.replaceAll("\\\\n", "\\n")
   let seed = xmur3(date.concat(message));
   let rand = mulberry32(seed());
     
@@ -57,7 +58,7 @@ var sketchWithParams = function(date, message, n_pixels, font_path, out_path) {
       p.fill(0)
       p.text(date, 0.25 * n_pixels, 0.07 * n_pixels)
       p.text("DAY-NFT.IO", 0.7625 * n_pixels, 0.07 * n_pixels)
- 
+
       message = message.replaceAll("\\n", "\n")
       p.text(message, 0.5 * n_pixels, 0.9 * n_pixels)
 
