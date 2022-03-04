@@ -6,7 +6,7 @@ import { Transaction } from "./Transaction";
 
 function App() {
   const [user, setUser] = useState({ loggedIn: null })
-  const [flowBalance, setFlowBalance] = useState(false)
+  const [flowBalance, setFlowBalance] = useState(null)
   const [flowToClaim, setFlowToClaim] = useState(null)
   const [NFTsToClaim, setNFTsToClaim] = useState(null)
   const [bestBid, setBestBid] = useState(null)
@@ -110,6 +110,10 @@ function App() {
     let day = today.getUTCDate().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})
     let month = (today.getUTCMonth()+1).toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})
     let year = today.getUTCFullYear()
+
+    if(message == null || flowBid == null) {
+        return
+    }
     
     initTransactionState()
     const transactionId = await fcl.mutate({
@@ -269,7 +273,7 @@ function App() {
       }
       {props.loggedIn
         ? <div>
-            <p>Current best bid: {Math.round(bestBid?.amount * 100) / 100} Flow</p>
+            <p>Current best bid: {bestBid? <span>{Math.round(bestBid?.amount * 100) / 100} Flow </span> : ""}</p>
             {bestBid?.user == user?.addr ? <p className="bestBid">You hold the current best bid!</p>:<span></span>}
             <p>Auction over in {timeToAuctionEnd}</p>
           </div>
@@ -300,7 +304,7 @@ function App() {
               <input style={{width: '30%', marginBottom:0}} type="number" step=".001" id="flowBid" name="flowBid" placeholder="Flow" onChange={(e) => setFlowBid(e.target.value)}/>
               <button style={{marginLeft: '10px'}} onClick={makeBid}>BID</button>
             </div>
-            {flowBalance <= 0
+            {flowBalance != null && flowBalance <= 0
                 ?<p className="fundAccountMsg">Please <a href="https://blocto.portto.io/" target="_blank" rel="noopener noreferrer">fund</a> your account before bidding</p>
                 :<span></span>
             }
