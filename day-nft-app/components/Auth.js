@@ -10,6 +10,7 @@ function App() {
   const [flowToClaim, setFlowToClaim] = useState(null)
   const [NFTsToClaim, setNFTsToClaim] = useState(null)
   const [bestBid, setBestBid] = useState(null)
+  const [bestBidTitle, setBestBidTitle] = useState(null)
   const [message, setMessage] = useState(null)
   const [flowBid, setFlowBid] = useState(null)
   const [transactionInProgress, setTransactionInProgress] = useState(false)
@@ -27,6 +28,7 @@ function App() {
       getFlowToClaim(user.addr);
       getNFTsToClaim(user.addr);
       getBestBid();
+      getBestBidTitle();
     } 
   }
 
@@ -44,6 +46,7 @@ function App() {
     setFlowToClaim(null)
     setNFTsToClaim(null)
     setBestBid(null)
+    setBestBidTitle(null)
     setMessage(null)
     setFlowBid(null)
   }
@@ -93,8 +96,21 @@ function App() {
       args: []
     })
 
-    //setBestBid(Math.round(bestBid.amount * 1000) / 1000)
     setBestBid(bestBid)
+  }
+
+  const getBestBidTitle = async () => {
+    const bestBidTitle = await fcl.query({
+      cadence: `
+        import DayNFT from 0xDayNFT
+
+        pub fun main(): String? {
+            return DayNFT.getBestBidTitle()
+        }
+      `,
+      args: []
+    })
+    setBestBidTitle(bestBidTitle)
   }
   
   async function updateTx(res) {
@@ -162,7 +178,8 @@ function App() {
     const transactionId = await fcl.mutate({
       cadence: `
         import DayNFT from 0xDayNFT
-        import FlowToken from 0xFlowToken
+        import NonFungibleToken from 0xNonFungibleToken
+        import MetadataViews from 0xMetadataViews
 
         transaction() {
 
@@ -176,7 +193,7 @@ function App() {
                     signer.save(<-collection, to: DayNFT.CollectionStoragePath)
 
                     // create a public capability for the collection
-                    signer.link<&DayNFT.Collection{DayNFT.CollectionPublic}>(
+                    signer.link<&DayNFT.Collection{DayNFT.CollectionPublic, NonFungibleToken.Receiver, NonFungibleToken.CollectionPublic, MetadataViews.ResolverCollection}>(
                         DayNFT.CollectionPublicPath,
                         target: DayNFT.CollectionStoragePath
                     )
@@ -310,6 +327,7 @@ function App() {
             }
           </div>
           <div id="p5sketch" className="center">
+          <span id="best_bid_msg" value={bestBidTitle? bestBidTitle : "What's the point of NFTs?"}></span>
           </div>
         </div>
         </div>
