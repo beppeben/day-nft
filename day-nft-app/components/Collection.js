@@ -177,10 +177,13 @@ function App() {
           <WelcomeText />
           <button style={{marginLeft: '10px'}} onClick={setupAccount}>SETUP ACCOUNT</button>
           {NFTToTransfer?
-              <div style={{display: 'flex', alignItems:'center', marginLeft: '10px'}}>
-                  <span>Send ID #{NFTToTransfer} to: </span>
-                  <input style={{marginBottom:'0', marginLeft: '10px', width: '330px'}} type="text" id="address" name="address" placeholder="Address" onChange={(e) => setToAddress(e.target.value)}/>   
+              <div style={{marginLeft: '10px'}}>
+              <span>Send ID #{NFTToTransfer} to: </span>
+              <div style={{display: 'flex', alignItems:'center'}}>
+               
+                  <input style={{marginBottom:'0', width: '330px'}} type="text" id="address" name="address" placeholder="Address" onChange={(e) => setToAddress(e.target.value)}/>   
                   <button style={{marginLeft: '10px'}} onClick={transferNFT}>SEND</button>
+              </div>
               </div>
               :<span></span>
           }
@@ -188,7 +191,7 @@ function App() {
             return  <div className="collection-img" key={index}>
                         <a alt={value} href={"imgs/" + value + ".png"}><img src={"imgs/" + value + ".png"}/></a>
                         <div style={{display: 'flex', margin: '5px', padding:'5px', justifyContent: 'center'}}>
-                            <p className="center">ID #{value}</p> 
+                            <p className="center">#{value}</p> 
                             <input type="radio" id={value} name="id_to_sell" value={value} style={{marginLeft: '10px', marginTop: '0px', width: '1em', height: '1em'}} onChange={(e) => setNFTToTransfer(e.target.value)}/>
                         </div>
                     </div>

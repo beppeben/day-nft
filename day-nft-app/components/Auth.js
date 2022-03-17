@@ -327,7 +327,7 @@ function App() {
             }
           </div>
           <div id="p5sketch" className="center">
-          <span id="best_bid_msg" value={bestBidTitle? bestBidTitle : "What's the point of NFTs?"}></span>
+          <span id="best_bid_msg" value={bestBidTitle != null? bestBidTitle : "What's the point of NFTs?"}></span>
           </div>
         </div>
         </div>
