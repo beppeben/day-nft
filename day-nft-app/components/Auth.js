@@ -27,12 +27,13 @@ function App() {
       setFlowBalance(Math.round(account.balance / 100000000 * 100) / 100);
       getFlowToClaim(user.addr);
       getNFTsToClaim(user.addr);
-      getBestBid();
-      getBestBidTitle();
     } 
   }
 
-  useEffect(() => fcl.currentUser.subscribe(onAuthenticate), [])
+  useEffect(() => {fcl.currentUser.subscribe(onAuthenticate)
+                   getBestBid()
+                   getBestBidTitle()}, 
+                  [])
 
   function initTransactionState() {
     setTransactionInProgress(true)
@@ -45,8 +46,6 @@ function App() {
     setUser(null)
     setFlowToClaim(null)
     setNFTsToClaim(null)
-    setBestBid(null)
-    setBestBidTitle(null)
     setMessage(null)
     setFlowBid(null)
   }
@@ -275,27 +274,12 @@ function App() {
   const WelcomeText = (props) => {
     return (
     <div className="center-text">
-      {!props.loggedIn?
-        <div>
-        <p>Day-NFTs are like digital postcards, with added rarity, community and rewards.</p>
-        <ul>
-          <li>Only one Day-NFT is minted every day to the highest bidder.</li>
-          <li>It comes with a unique artwork which depends on the posted message.</li>        
-          <li>50% of all earnings from mints and royalties are redistributed back to NFT holders, who become actual shareholders of the project.</li>
-          <li>Come and showcase your Day-NFT on <a href="https://discord.gg/cSjwSSxwXf" target="_blank" rel="noopener noreferrer">Discord</a>!</li>
-          <li>Marketplace will come soon.</li>
-        </ul>
-        </div>
-        :<span></span>
-      }
-      {props.loggedIn
-        ? <div>
+          <div>
             <p>Current best bid: {bestBid? <span>{Math.round(bestBid?.amount * 100) / 100} Flow </span> : ""}</p>
-            {bestBid?.user == user?.addr ? <p className="bestBid">You hold the current best bid!</p>:<span></span>}
+            {props.loggedIn && bestBid?.user == user?.addr ? <p className="bestBid">You hold the current best bid!</p>:<span></span>}
             <p>Auction over in {timeToAuctionEnd}</p>
           </div>
-        : <span></span>
-      }
+
 
     </div>
     )
@@ -314,8 +298,8 @@ function App() {
       <div className="grid">
         <div id="left-panel">
         <WelcomeText loggedIn={user?.loggedIn} />
-        <div id="bid-container" style={{display: user?.loggedIn ? 'block' : 'none' }}>
-          <div>
+        <div id="bid-container">
+          <div style={{display: user?.loggedIn ? 'block' : 'none' }}>
             <input style={{marginBottom:'10px'}} type="text" id="msg" name="msg" maxLength="70" placeholder="Message" onChange={(e) => setMessage(e.target.value)}/>      
             <div style={{display: 'flex', alignItems:'center'}}>
               <input style={{width: '30%', marginBottom:0}} type="number" step=".001" id="flowBid" name="flowBid" placeholder="Flow" onChange={(e) => setFlowBid(e.target.value)}/>
