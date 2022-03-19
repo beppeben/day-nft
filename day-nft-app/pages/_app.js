@@ -13,7 +13,7 @@ function MyApp({ Component, pageProps }) {
           <Link href="/">
             <a><h2>DAY-NFT.IO</h2></a>
           </Link>
-          <span className="subHeader"><small>Flow's diary</small></span>
+          <span className="subHeader"><small>Flow&apos;s diary</small></span>
         </li>
       </ul>
       <ul>
