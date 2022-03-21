@@ -11,6 +11,7 @@ function App() {
   const [NFTsToClaim, setNFTsToClaim] = useState(null)
   const [bestBid, setBestBid] = useState(null)
   const [bestBidTitle, setBestBidTitle] = useState(null)
+  const [currentId, setCurrentId] = useState(null)
   const [message, setMessage] = useState(null)
   const [flowBid, setFlowBid] = useState(null)
   const [transactionInProgress, setTransactionInProgress] = useState(false)
@@ -27,12 +28,16 @@ function App() {
       setFlowBalance(Math.round(account.balance / 100000000 * 100) / 100);
       getFlowToClaim(user.addr);
       getNFTsToClaim(user.addr);
+      getBestBid();
+      getBestBidTitle();
+      getCurrentId();
     } 
   }
 
   useEffect(() => {fcl.currentUser.subscribe(onAuthenticate)
                    getBestBid()
-                   getBestBidTitle()}, 
+                   getBestBidTitle()
+                   getCurrentId()}, 
                   [])
 
   function initTransactionState() {
@@ -110,6 +115,20 @@ function App() {
       args: []
     })
     setBestBidTitle(bestBidTitle)
+  }
+
+  const getCurrentId = async () => {
+    const currentId = await fcl.query({
+      cadence: `
+        import DayNFT from 0xDayNFT
+
+        pub fun main(): UInt64 {
+            return DayNFT.totalSupply
+        }
+      `,
+      args: []
+    })
+    setCurrentId(currentId)
   }
   
   async function updateTx(res) {
@@ -311,8 +330,9 @@ function App() {
             }
           </div>
           <div id="p5sketch" className="center">
-          <span id="best_bid_msg" value={bestBidTitle != null? bestBidTitle : "What's the point of NFTs?"}></span>
+          <span id="best_bid_msg" value={bestBidTitle != null && bestBid?.user != "0x0000000000000000"? bestBidTitle : "What's the point of NFTs?"}></span>
           </div>
+          <p className="center" style={{marginBottom:'30px'}}>{currentId != null ? <span>#{currentId}</span> : ""}</p>
         </div>
         </div>
         <div id="right-panel">
