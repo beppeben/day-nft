@@ -111,7 +111,7 @@ function App() {
         `,
         args: (arg, t) => [arg(address, t.Address)]
       })
-      setNFTIds(ids.sort())
+      setNFTIds(ids.sort((a, b) => a - b))
     } catch(e){}
   }
 

@@ -118,7 +118,7 @@ function App() {
   }
 
   const getCurrentId = async () => {
-    const currentId = await fcl.query({
+    var currentId = await fcl.query({
       cadence: `
         import DayNFT from 0xDayNFT
 
@@ -332,7 +332,7 @@ function App() {
           <div id="p5sketch" className="center">
           <span id="best_bid_msg" value={bestBidTitle != null && bestBid?.user != "0x0000000000000000"? bestBidTitle : "What's the point of NFTs?"}></span>
           </div>
-          <p className="center" style={{marginBottom:'30px'}}>{currentId != null ? <span>#{currentId}</span> : ""}</p>
+          <p className="center" style={{marginBottom:'30px'}}>{currentId != null ? <span>#{bestBidTitle != null? currentId : currentId+1}</span> : ""}</p>
         </div>
         </div>
         <div id="right-panel">
