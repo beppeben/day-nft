@@ -65,7 +65,7 @@ function App() {
 
             prepare(signer: AuthAccount) {
                 if (signer.getCapability(DayNFT.CollectionPublicPath)
-                    .borrow<&DayNFT.Collection{DayNFT.CollectionPublic}>() == nil) {
+                    .borrow<&{DayNFT.CollectionPublic}>() == nil) {
                     // Create a Collection resource and save it to storage
                     let collection <- DayNFT.createEmptyCollection()
                     signer.save(<-collection, to: DayNFT.CollectionStoragePath)
