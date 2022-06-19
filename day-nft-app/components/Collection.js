@@ -19,7 +19,7 @@ function App() {
     setUser(user)
     if (user?.addr != null) {
       getDayNFTIds(user.addr);
-      //getDOFInfo(user.addr);
+      getDOFInfo(user.addr);
     } 
   }
 
@@ -86,7 +86,7 @@ function App() {
                     )
                 }
                 if (signer.getCapability(DaysOnFlow.CollectionPublicPath)
-                    .borrow<&DaysOnFlow.Collection{DaysOnFlow.CollectionPublic}>() == nil) {
+                    .borrow<&{DaysOnFlow.CollectionPublic}>() == nil) {
                     // Create a Collection resource and save it to storage
                     let collection <- DaysOnFlow.createEmptyCollection()
                     signer.save(<-collection, to: DaysOnFlow.CollectionStoragePath)
@@ -143,15 +143,18 @@ function App() {
                 pub let id: UInt64
                 pub let serial: UInt64
                 pub let image: String
+                pub let smallImage: String
                 pub let seriesId: UInt64
 
                 init(id: UInt64,
                       serial: UInt64, 
                       image: String,
+                      smallImage: String,
                       seriesId: UInt64) {
                     self.id = id
                     self.serial = serial
                     self.image = image
+                    self.smallImage = smallImage
                     self.seriesId = seriesId
                 }
             }
@@ -166,7 +169,7 @@ function App() {
 
                 for id in collectionRef.getIDs() {
                     let nft = collectionRef.borrowDOF(id: id)!
-                    let info = DOFInfo(id: id, serial: nft.serial, image: nft.seriesImage, seriesId: nft.seriesId)
+                    let info = DOFInfo(id: id, serial: nft.serial, image: nft.seriesImage, smallImage: nft.seriesSmallImage, seriesId: nft.seriesId)
                     res.append(info)
                 }
                 return res
@@ -176,12 +179,12 @@ function App() {
       })
       info = info.sort((a, b) => a.serial - b.serial)
       var array_info = []
-      info.forEach(e => array_info.push([e.id, e.serial, e.image, e.seriesId]))
+      info.forEach(e => array_info.push([e.id, e.serial, e.image, e.smallImage, e.seriesId]))
       setDOFInfo(array_info)
     } catch(e){console.log(e)}
   }
 
-  const transferNFT = async () => {
+  const transferDayNFT = async () => {
     if(NFTToTransfer == null || toAddress == null) {
         return
     }
@@ -223,6 +226,49 @@ function App() {
     setTxId(transactionId);
     fcl.tx(transactionId).subscribe(updateTx)
   }
+
+  const transferDOF = async () => {
+    if(NFTToTransfer == null || toAddress == null) {
+        return
+    }
+     
+    initTransactionState()
+    const transactionId = await fcl.mutate({
+      cadence: `
+        import DaysOnFlow from 0xDaysOnFlow
+
+        transaction(id: UInt64, toAddress: Address) {
+
+            let collection: &DaysOnFlow.Collection
+
+            prepare(signer: AuthAccount) {
+                self.collection = signer.borrow<&DaysOnFlow.Collection>(from: DaysOnFlow.CollectionStoragePath)
+                    ?? panic("Could not get sender's Collection")    
+            }
+
+            execute { 
+                let receiver = getAccount(toAddress)
+                    .getCapability(DaysOnFlow.CollectionPublicPath)
+                    .borrow<&{DaysOnFlow.CollectionPublic}>()
+                    ?? panic("Could not get receiver reference to the NFT Collection")
+
+                let nft <- self.collection.withdraw(withdrawID: id)
+                receiver.deposit(token: <-nft)
+            }
+        }
+      `,
+      args: (arg, t) => [
+        arg(parseInt(NFTToTransfer), t.UInt64),
+        arg(toAddress, t.Address)
+      ],
+      payer: fcl.authz,
+      proposer: fcl.authz,
+      authorizations: [fcl.authz],
+      limit: 1000
+    })
+    setTxId(transactionId);
+    fcl.tx(transactionId).subscribe(updateTx)
+  }
  
   const WelcomeText = (props) => {
     return (
@@ -241,25 +287,31 @@ function App() {
       <div className="grid">
         <div>
           <WelcomeText />
-          {NFTIds.length == 0?
+          {NFTIds.length == 0 && DOFInfo.length == 0?
             <button style={{marginLeft: '10px'}} onClick={setupAccount}>SETUP ACCOUNT</button>
             :<span></span>
           }
-          <div>
-            <div style={{display: 'flex', margin: '5px', padding:'5px', justifyContent: 'center'}}>
-                <input type="radio" id="daynft-radio" name="collection_id" value="0" style={{marginLeft: '10px', marginTop: '0px', width: '1em', height: '1em'}} onChange={(e) => setIsDaysOnFlow(false)} checked={!isDaysOnFlow}/>
-                <p className="center" style={{marginRight: '20px'}}>DayNFT</p> 
-                <input type="radio" id="dof-radio" name="collection_id" value="1" style={{marginLeft: '10px', marginTop: '0px', width: '1em', height: '1em'}} onChange={(e) => setIsDaysOnFlow(true)}/>
-                <p className="center">Days On Flow</p> 
-            </div>
-          </div>
+          {user?.loggedIn?
+              <div>
+                <div style={{display: 'flex', margin: '5px', padding:'5px', justifyContent: 'center'}}>
+                    <input type="radio" id="daynft-radio" name="collection_id" value="0" style={{marginLeft: '10px', marginTop: '0px', width: '1em', height: '1em'}} onChange={(e) => {setIsDaysOnFlow(false); setNFTToTransfer(null)}} checked={!isDaysOnFlow}/>
+                    <p className="center" style={{marginRight: '20px'}}>DayNFT</p> 
+                    <input type="radio" id="dof-radio" name="collection_id" value="1" style={{marginLeft: '10px', marginTop: '0px', width: '1em', height: '1em'}} onChange={(e) => {setIsDaysOnFlow(true); setNFTToTransfer(null)}}/>
+                    <p className="center">Days On Flow</p> 
+                </div>
+              </div>
+              :<div></div>
+          }
           {NFTToTransfer?
               <div style={{marginLeft: '10px'}}>
-              <span>Send ID #{NFTToTransfer} to: </span>
+              <span>Send {isDaysOnFlow? "DOF": "DAYNFT"} #{NFTToTransfer} to: </span>
               <div style={{display: 'flex', alignItems:'center'}}>
                
-                  <input style={{marginBottom:'0', width: '330px'}} type="text" id="address" name="address" placeholder="Address" onChange={(e) => setToAddress(e.target.value)}/>   
-                  <button style={{marginLeft: '10px'}} onClick={transferNFT}>SEND</button>
+                  <input style={{marginBottom:'0', width: '330px'}} type="text" id="address" name="address" placeholder="Address" onChange={(e) => setToAddress(e.target.value)}/>
+                  {isDaysOnFlow?
+                    <button style={{marginLeft: '10px'}} onClick={transferDOF}>SEND</button>
+                    :<button style={{marginLeft: '10px'}} onClick={transferDayNFT}>SEND</button>
+                  }
               </div>
               </div>
               :<span></span>
@@ -267,23 +319,23 @@ function App() {
           {isDaysOnFlow?
           DOFInfo.map((value, index) => {
             return  <div className="collection-img" key={index}>
-                        <a alt={value[0]} href={"https://ipfs.io/ipfs/" + value[2]}><img src={"https://ipfs.io/ipfs/" + value[2]}/></a>
+                        <a alt={value[0]} href={"/" + value[2] + ".png"} target="_blank"><img src={"/" + value[3] + ".jpg"}/></a>
                         <div style={{display: 'flex', margin: '5px', padding:'5px', justifyContent: 'center'}}>
-                            <p className="center">{value[3] == "269750036"? "100DOF" : ""}  #{value[1]}</p> 
-                            <input type="radio" id={value[0]} name="id_to_sell" value={value[0]} style={{marginLeft: '10px', marginTop: '0px', width: '1em', height: '1em'}} onChange={(e) => setNFTToTransfer(e.target.value)}/>
+                            <p className="center">{value[4] == "279849584"? "100DOF" : ""}  #{value[1]}</p> 
+                            <input type="radio" id={"dof"+value[0]} name="id_to_sell" value={value[0]} style={{marginLeft: '10px', marginTop: '0px', width: '1em', height: '1em'}} onChange={(e) => setNFTToTransfer(e.target.value)} checked={isDaysOnFlow && NFTToTransfer == value}/>
                         </div>
                     </div>
           })
           :NFTIds.map((value, index) => {
             return  <div className="collection-img" key={index}>
-                        <a alt={value} href={"imgs/" + value + ".png"}><img src={"imgs/" + value + ".png"}/></a>
+                        <a alt={value} href={"imgs/" + value + ".png"} target="_blank"><img src={"imgs/" + value + ".png"}/></a>
                         <div style={{display: 'flex', margin: '5px', padding:'5px', justifyContent: 'center'}}>
                             <p className="center">#{value}</p> 
-                            <input type="radio" id={value} name="id_to_sell" value={value} style={{marginLeft: '10px', marginTop: '0px', width: '1em', height: '1em'}} onChange={(e) => setNFTToTransfer(e.target.value)}/>
+                            <input type="radio" id={"daynft"+value} name="id_to_sell" value={value} style={{marginLeft: '10px', marginTop: '0px', width: '1em', height: '1em'}} onChange={(e) => setNFTToTransfer(e.target.value)} checked={!isDaysOnFlow && NFTToTransfer == value}/>
                         </div>
                     </div>
           })}
-          {NFTIds.length == 0 && DOFInfo.length == 0 && user?.loggedIn
+          {((NFTIds.length == 0 && !isDaysOnFlow) || (DOFInfo.length == 0 && isDaysOnFlow)) && user?.loggedIn
            ? <p>Collection empty</p> : <span></span>
           }
           <div></div>

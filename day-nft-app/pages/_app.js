@@ -10,9 +10,11 @@ function MyApp({ Component, pageProps }) {
     <nav className="container header">
       <ul>
         <li>
-          <Link href="/">
-            <a><h2>DAY-NFT.IO</h2></a>
-          </Link>
+          <div>
+            <Link href="/">
+              <a><h2>DAY-NFT.IO</h2></a>
+            </Link>
+          </div>
           <span className="subHeader"><small>Flow&apos;s diary</small></span>
         </li>
       </ul>

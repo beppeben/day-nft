@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import * as fcl from "@onflow/fcl";
 import { Transaction } from "./Transaction";
 
-const seriesID = 269750036;
+const seriesID = 279849584;
 
 function App() {
   const [user, setUser] = useState({ loggedIn: null })
@@ -43,11 +43,6 @@ function App() {
   const logOut = async () => {
     const logout = await fcl.unauthenticate()
     setUser(null)
-    setFlowToClaim(null)
-    setNFTsToClaim(null)
-    setMessage(null)
-    setFlowBid(null)
-    setTotalSupply(null)
   }
 
   const getTotalSupply = async () => {
@@ -134,7 +129,7 @@ function App() {
             
             prepare(signer: AuthAccount) {
                 if (signer.getCapability(DaysOnFlow.CollectionPublicPath)
-                    .borrow<&DaysOnFlow.Collection{DaysOnFlow.CollectionPublic}>() == nil) {
+                    .borrow<&{DaysOnFlow.CollectionPublic}>() == nil) {
                     // Create a Collection resource and save it to storage
                     let collection <- DaysOnFlow.createEmptyCollection()
                     signer.save(<-collection, to: DaysOnFlow.CollectionStoragePath)
@@ -172,7 +167,7 @@ function App() {
         import DaysOnFlow from 0xDaysOnFlow
         import NonFungibleToken from 0xNonFungibleToken
         import MetadataViews from 0xMetadataViews
-
+        import FlowToken from 0xFlowToken
         
         transaction(seriesId: UInt64, bidAmount: UFix64) {
 
@@ -181,7 +176,7 @@ function App() {
             
             prepare(signer: AuthAccount) {
                 if (signer.getCapability(DaysOnFlow.CollectionPublicPath)
-                    .borrow<&DaysOnFlow.Collection{DaysOnFlow.CollectionPublic}>() == nil) {
+                    .borrow<&{DaysOnFlow.CollectionPublic}>() == nil) {
                     // Create a Collection resource and save it to storage
                     let collection <- DaysOnFlow.createEmptyCollection()
                     signer.save(<-collection, to: DaysOnFlow.CollectionStoragePath)
@@ -206,7 +201,7 @@ function App() {
             }
         }
       `,
-      args: (arg, t) => [arg(seriesID, t.UInt64), arg(0.0, t.UFix64)],
+      args: (arg, t) => [arg(seriesID, t.UInt64), arg(parseFloat("0.0").toFixed(6), t.UFix64)],
       payer: fcl.authz,
       proposer: fcl.authz,
       authorizations: [fcl.authz],
@@ -223,7 +218,7 @@ function App() {
         import DaysOnFlow from 0xDaysOnFlow
         import NonFungibleToken from 0xNonFungibleToken
         import MetadataViews from 0xMetadataViews
-
+        import FlowToken from 0xFlowToken
         
         transaction(seriesId: UInt64, bidAmount: UFix64) {
 
@@ -232,7 +227,7 @@ function App() {
             
             prepare(signer: AuthAccount) {
                 if (signer.getCapability(DaysOnFlow.CollectionPublicPath)
-                    .borrow<&DaysOnFlow.Collection{DaysOnFlow.CollectionPublic}>() == nil) {
+                    .borrow<&{DaysOnFlow.CollectionPublic}>() == nil) {
                     // Create a Collection resource and save it to storage
                     let collection <- DaysOnFlow.createEmptyCollection()
                     signer.save(<-collection, to: DaysOnFlow.CollectionStoragePath)
@@ -257,7 +252,7 @@ function App() {
             }
         }
       `,
-      args: (arg, t) => [arg(seriesID, t.UInt64), arg(2.2, t.UFix64)],
+      args: (arg, t) => [arg(seriesID, t.UInt64), arg(parseFloat("2.22").toFixed(6), t.UFix64)],
       payer: fcl.authz,
       proposer: fcl.authz,
       authorizations: [fcl.authz],
@@ -285,9 +280,9 @@ function App() {
           </div>
         </div>
         <div id="bid-container">
-          <div id="p5sketch" className="center">
-            <img src="https://ipfs.io/ipfs/QmeRFxp5Gd1i16ox98nWK96Ls2cvo4ZusiSxEGHz1ztJ9q"/>
+          <div id="dofimg" className="center">
             
+            <a href="/QmeRFxp5Gd1i16ox98nWK96Ls2cvo4ZusiSxEGHz1ztJ9q.png" target="_blank"><img src="/QmcrhA1C3hTXnhRLpynZWBAyPaf4p8zsAE8NK3H3oM2qsv.jpg"/></a>
           </div>
           <p className="center" style={{marginBottom:'30px', marginTop:'20px'}}>{totalSupply}/222 minted</p>
         </div>
@@ -315,7 +310,7 @@ function App() {
                     }
                   </div>
                   <div className="infoList" style={{display: 'flex', alignItems:'center'}}>
-                    Public (2.2 $FLOW) ({nbPublicToMint} left):
+                    Public (2.22 $FLOW) ({nbPublicToMint} left):
                     {nbPublicToMint > 0?
                       <button style={{marginLeft: '10px'}} onClick={mintPublic}>MINT 1</button>
                       :<span></span>
