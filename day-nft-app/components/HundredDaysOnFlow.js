@@ -313,7 +313,7 @@ function App() {
                     Public (2.22 $FLOW) ({nbPublicToMint} left):
                     {nbPublicToMint > 0?
                       <button style={{marginLeft: '10px'}} onClick={mintPublic}>MINT 1</button>
-                      :<span></span>
+                      :<span style={{marginLeft: '10px'}}>NA</span>
                     }
                   </div>
                   <button onClick={logOut}>LOGOUT</button>
