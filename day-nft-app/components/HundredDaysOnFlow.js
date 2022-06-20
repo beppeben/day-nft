@@ -282,7 +282,7 @@ function App() {
         <div id="bid-container">
           <div id="dofimg" className="center">
             
-            <a href="/QmeRFxp5Gd1i16ox98nWK96Ls2cvo4ZusiSxEGHz1ztJ9q.png" target="_blank"><img src="/QmcrhA1C3hTXnhRLpynZWBAyPaf4p8zsAE8NK3H3oM2qsv.jpg"/></a>
+            <a href="/QmeRFxp5Gd1i16ox98nWK96Ls2cvo4ZusiSxEGHz1ztJ9q.png" target="_blank" rel="noreferrer"><img src="/QmcrhA1C3hTXnhRLpynZWBAyPaf4p8zsAE8NK3H3oM2qsv.jpg"/></a>
           </div>
           <p className="center" style={{marginBottom:'30px', marginTop:'20px'}}>{totalSupply}/222 minted</p>
         </div>

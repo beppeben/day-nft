@@ -319,7 +319,7 @@ function App() {
           {isDaysOnFlow?
           DOFInfo.map((value, index) => {
             return  <div className="collection-img" key={index}>
-                        <a alt={value[0]} href={"/" + value[2] + ".png"} target="_blank"><img src={"/" + value[3] + ".jpg"}/></a>
+                        <a alt={value[0]} href={"/" + value[2] + ".png"} target="_blank" rel="noreferrer"><img src={"/" + value[3] + ".jpg"}/></a>
                         <div style={{display: 'flex', margin: '5px', padding:'5px', justifyContent: 'center'}}>
                             <p className="center">{value[4] == "279849584"? "100DOF" : ""}  #{value[1]}</p> 
                             <input type="radio" id={"dof"+value[0]} name="id_to_sell" value={value[0]} style={{marginLeft: '10px', marginTop: '0px', width: '1em', height: '1em'}} onChange={(e) => setNFTToTransfer(e.target.value)} checked={isDaysOnFlow && NFTToTransfer == value}/>
@@ -328,7 +328,7 @@ function App() {
           })
           :NFTIds.map((value, index) => {
             return  <div className="collection-img" key={index}>
-                        <a alt={value} href={"imgs/" + value + ".png"} target="_blank"><img src={"imgs/" + value + ".png"}/></a>
+                        <a alt={value} href={"imgs/" + value + ".png"} target="_blank" rel="noreferrer"><img src={"imgs/" + value + ".png"}/></a>
                         <div style={{display: 'flex', margin: '5px', padding:'5px', justifyContent: 'center'}}>
                             <p className="center">#{value}</p> 
                             <input type="radio" id={"daynft"+value} name="id_to_sell" value={value} style={{marginLeft: '10px', marginTop: '0px', width: '1em', height: '1em'}} onChange={(e) => setNFTToTransfer(e.target.value)} checked={!isDaysOnFlow && NFTToTransfer == value}/>
