@@ -1,7 +1,7 @@
 import { config } from "@onflow/fcl";
 
 config({
-  "accessNode.api": "https://access-mainnet-beta.onflow.org",
+  "accessNode.api": "https://rest-mainnet.onflow.org",
   "discovery.wallet": "https://fcl-discovery.onflow.org/authn",
   "0xDayNFT": "0x1600b04bf033fb99",
   "0xDaysOnFlow": "0x799da0ef17f38104",
