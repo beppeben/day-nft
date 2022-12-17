@@ -15,7 +15,7 @@ function MyApp({ Component, pageProps }) {
               <a><h2>DAY-NFT.IO</h2></a>
             </Link>
           </div>
-          <span className="subHeader"><small>Flow Diary</small></span>
+          <span className="subHeader"><small>Flovatar Drinks Edition</small></span>
         </li>
       </ul>
       <ul>

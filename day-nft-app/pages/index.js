@@ -12,7 +12,7 @@ export default function Home() {
         <link href="https://fonts.cdnfonts.com/css/silkscreen" rel="stylesheet" />
         <meta property="og:image" content="/thumbnail.png" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js" />
-        <script src="sketch.js" />
+        <script src="sketch_flovatar.js" />
         <script src="functions.js" />
       </Head>
       
