@@ -5,7 +5,7 @@ var sketch_path = args[0]
 var date = args[1]
 var message = args[2]
 var out_path = args[3]
-eval(fs.readFileSync(sketch_path + 'sketch_flovatar.js')+'');
+eval(fs.readFileSync(sketch_path + 'sketch.js')+'');
 
 let resourcesToPreload = {
   box1: p5.loadImage(sketch_path + 'flovatar/box1.png'),
